@@ -1,7 +1,6 @@
 import os
 import pygame
 import time
-from Sounds import *
 
 
 # TOC HUD settings
@@ -127,6 +126,11 @@ def render_TOC(screen):
     toc_surface.set_alpha(toc_alpha)
     screen.blit(toc_surface, (toc_x, toc_y))
     toc_dirty = False
+
+
+def is_TOC_visible()->bool:
+    global toc_visible
+    return toc_visible
 
 
 def toggle_TOC(screen):
