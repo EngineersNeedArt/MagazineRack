@@ -1,5 +1,6 @@
 import pygame
 import time
+from typing import Optional
 from TOC_Data import *
 
 
@@ -16,12 +17,12 @@ TOC_TEXT_Y_OFFSET = 5
 toc_visible = False
 toc_alpha = 0
 toc_dirty = False
-toc_timer = None
+toc_timer: float = 0
 toc_x = 0
 toc_y = 0
 toc_wide = 0
 toc_tall = 0
-toc_surface = None
+toc_surface: Optional[pygame.Surface] = None
 toc_column_1 = pygame.Rect(0, 0, 0, 0)
 toc_column_2 = pygame.Rect(0, 0, 0, 0)
 toc_column_3 = pygame.Rect(0, 0, 0, 0)
@@ -31,7 +32,6 @@ toc_column_4 = pygame.Rect(0, 0, 0, 0)
 def _update_toc_surface():
     global toc_wide
     global toc_tall
-    global toc_surface
     global toc_surface
     global base_directories
     global toc_column_1
@@ -99,6 +99,20 @@ def _update_toc_surface():
         row = row + 1
     for item in files:
         _draw_row(text_x, text_y, row == selected_row, toc_column_3, toc_surface)
+        text_y = text_y + TOC_FONT_SIZE
+        row = row + 1
+
+    # Draw column 4.
+    directories, files, selected_row = get_TOC_column_4_directories_files()
+    text_x = toc_column_4.left
+    text_y = toc_column_4.top
+    row = 0
+    for item in directories:
+        _draw_row(text_x, text_y, row == selected_row, toc_column_4, toc_surface)
+        text_y = text_y + TOC_FONT_SIZE
+        row = row + 1
+    for item in files:
+        _draw_row(text_x, text_y, row == selected_row, toc_column_4, toc_surface)
         text_y = text_y + TOC_FONT_SIZE
         row = row + 1
 

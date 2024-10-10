@@ -124,6 +124,25 @@ def _select_end():
     return True
 
 
+def _clear_column(column_index):
+    global directories_column_2
+    global files_column_2
+    global directories_column_3
+    global files_column_3
+    global directories_column_4
+    global files_column_4
+
+    if column_index == 2:
+        directories_column_2.clear()
+        files_column_2.clear()
+    if column_index == 3:
+        directories_column_3.clear()
+        files_column_3.clear()
+    if column_index == 4:
+        directories_column_4.clear()
+        files_column_4.clear()
+
+
 def _left_active_column():
     global active_column
     global column_2_selected_row
@@ -140,11 +159,13 @@ def _left_active_column():
 
     if active_column == 1:
         column_2_selected_row = None
+        _clear_column(3)
         selection_changed = True
         return True
 
     if active_column == 2:
         column_3_selected_row = None
+        _clear_column(4)
         selection_changed = True
         return True
 
@@ -243,7 +264,7 @@ def _up_active_column():
 
     if active_column == 4:
         if column_4_selected_row > 0:
-            column_3_selected_row = column_4_selected_row - 1
+            column_4_selected_row = column_4_selected_row - 1
             selection_changed = True
         else:
             return False
@@ -357,6 +378,12 @@ def get_TOC_column_3_directories_files():
     global directories_column_3
     global files_column_3
     return directories_column_3, files_column_3, column_3_selected_row
+
+
+def get_TOC_column_4_directories_files():
+    global directories_column_4
+    global files_column_4
+    return directories_column_4, files_column_4, column_4_selected_row
 
 
 def is_TOC_selection_changed()->bool:
