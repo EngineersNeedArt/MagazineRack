@@ -53,7 +53,7 @@ def _get_directory_path_for_column (column_index):
     return path
 
 
-def _get_directories_files_at_path(path):
+def _get_directories_files_at_path(path, remove_prefix = None):
     directories = []
     files = []
 
@@ -64,7 +64,10 @@ def _get_directories_files_at_path(path):
             if os.path.isdir(item_path):
                 directories.append(item)
             elif item_path.endswith('.pdf'):
-                files.append(item)
+                item_name = item[:-4]  # Removes the last 4 characters ('.pdf')
+                if (remove_prefix is not None) and (item_name.startswith(remove_prefix)):
+                    item_name = item_name[len(remove_prefix):]
+                files.append(item_name)
         directories.sort()
         files.sort()
     return directories, files
@@ -92,10 +95,13 @@ def _get_column_3_directories_and_files():
 
 
 def _get_column_4_directories_and_files():
+    global column_1_selected_row
+    global directories_column_1
     global directories_column_4
     global files_column_4
+    prefix = directories_column_1[column_1_selected_row]
     path = _get_directory_path_for_column(4)
-    directories_column_4, files_column_4 = _get_directories_files_at_path(path)
+    directories_column_4, files_column_4 = _get_directories_files_at_path(path, prefix)
 
 
 def _select_start():

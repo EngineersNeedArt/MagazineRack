@@ -8,11 +8,12 @@ from TOC_Data import *
 TOC_FADE_TIME = 1  # 1 second to fade out
 TOC_RADIUS = 7  # Preferred radius
 TOC_STROKE = 3  # Stroke thickness
-TOC_FONT_SIZE = 28  # Your preferred font size
+TOC_FONT_SIZE = 22  # Your preferred font size
+TOC_CELL_HEIGHT = 28  # Your preferred font size
 TOC_MARGIN = 8  # Padding inside TOC
 COLUMN_H_PADDING = 8  # Padding between columns
 TOC_TEXT_X_OFFSET = 3
-TOC_TEXT_Y_OFFSET = 5
+TOC_TEXT_Y_OFFSET = 1
 
 toc_visible = False
 toc_alpha = 0
@@ -27,6 +28,7 @@ toc_column_1 = pygame.Rect(0, 0, 0, 0)
 toc_column_2 = pygame.Rect(0, 0, 0, 0)
 toc_column_3 = pygame.Rect(0, 0, 0, 0)
 toc_column_4 = pygame.Rect(0, 0, 0, 0)
+narrow_font: Optional[pygame.font.Font] = None
 
 
 def _update_toc_surface():
@@ -40,12 +42,12 @@ def _update_toc_surface():
         if selected:
             # Make a copy of the original rect
             item_bounds = bounds.copy()
-            item_bounds.height = TOC_FONT_SIZE
+            item_bounds.height = TOC_CELL_HEIGHT
             item_bounds.y = text_y
             pygame.draw.rect(surface, WHITE, item_bounds)
-            text_surface = font.render(item, True, BLACK_TRANSPARENT)
+            text_surface = narrow_font.render(item, True, BLACK_TRANSPARENT)
         else:
-            text_surface = font.render(item, True, WHITE)
+            text_surface = narrow_font.render(item, True, WHITE)
         surface.blit(text_surface, (text_x + TOC_TEXT_X_OFFSET, text_y + TOC_TEXT_Y_OFFSET))
 
     # Define colors
@@ -58,8 +60,6 @@ def _update_toc_surface():
                      (TOC_STROKE, TOC_STROKE, toc_wide - (TOC_STROKE * 2), toc_tall - (TOC_STROKE * 2)),
                      border_radius=TOC_RADIUS - TOC_STROKE)
 
-    font = pygame.font.SysFont(None, TOC_FONT_SIZE)
-
     # Draw column 1.
     directories, files, selected_row = get_TOC_column_1_directories_files()
     text_x = toc_column_1.left
@@ -67,11 +67,11 @@ def _update_toc_surface():
     row = 0
     for item in directories:
         _draw_row(text_x, text_y, row == selected_row, toc_column_1, toc_surface)
-        text_y = text_y + TOC_FONT_SIZE
+        text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
     for item in files:
         _draw_row(text_x, text_y, row == selected_row, toc_column_1, toc_surface)
-        text_y = text_y + TOC_FONT_SIZE
+        text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
 
     # Draw column 2.
@@ -81,11 +81,11 @@ def _update_toc_surface():
     row = 0
     for item in directories:
         _draw_row(text_x, text_y, row == selected_row, toc_column_2, toc_surface)
-        text_y = text_y + TOC_FONT_SIZE
+        text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
     for item in files:
         _draw_row(text_x, text_y, row == selected_row, toc_column_2, toc_surface)
-        text_y = text_y + TOC_FONT_SIZE
+        text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
 
     # Draw column 3.
@@ -95,11 +95,11 @@ def _update_toc_surface():
     row = 0
     for item in directories:
         _draw_row(text_x, text_y, row == selected_row, toc_column_3, toc_surface)
-        text_y = text_y + TOC_FONT_SIZE
+        text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
     for item in files:
         _draw_row(text_x, text_y, row == selected_row, toc_column_3, toc_surface)
-        text_y = text_y + TOC_FONT_SIZE
+        text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
 
     # Draw column 4.
@@ -109,11 +109,11 @@ def _update_toc_surface():
     row = 0
     for item in directories:
         _draw_row(text_x, text_y, row == selected_row, toc_column_4, toc_surface)
-        text_y = text_y + TOC_FONT_SIZE
+        text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
     for item in files:
         _draw_row(text_x, text_y, row == selected_row, toc_column_4, toc_surface)
-        text_y = text_y + TOC_FONT_SIZE
+        text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
 
 def init_TOC(screen_wide, screen_tall):
@@ -126,6 +126,7 @@ def init_TOC(screen_wide, screen_tall):
     global toc_column_2
     global toc_column_3
     global toc_column_4
+    global narrow_font
 
     toc_x = 10  # X position
     toc_y = 10  # Y position
@@ -139,6 +140,7 @@ def init_TOC(screen_wide, screen_tall):
     toc_column_2 = pygame.Rect(TOC_MARGIN + column_wide + COLUMN_H_PADDING, TOC_MARGIN, column_wide, column_tall)
     toc_column_3 = pygame.Rect(TOC_MARGIN + (column_wide * 2) + (COLUMN_H_PADDING * 2), TOC_MARGIN, column_wide, column_tall)
     toc_column_4 = pygame.Rect(TOC_MARGIN + (column_wide * 3) + (COLUMN_H_PADDING * 3), TOC_MARGIN, column_wide, column_tall)
+    narrow_font = pygame.font.Font("AsapCondensed-Medium.ttf", TOC_FONT_SIZE)
 
 
 def handle_TOC()->bool:
