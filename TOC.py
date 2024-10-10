@@ -1,6 +1,6 @@
-import os
 import pygame
 import time
+from TOC_Data import *
 
 
 # TOC HUD settings
@@ -10,10 +10,8 @@ TOC_STROKE = 3  # Stroke thickness
 TOC_FONT_SIZE = 28  # Your preferred font size
 TOC_MARGIN = 8  # Padding inside TOC
 COLUMN_H_PADDING = 8  # Padding between columns
-
-directory_path = None
-base_directories = []
-base_files = []
+TOC_TEXT_X_OFFSET = 3
+TOC_TEXT_Y_OFFSET = 5
 
 toc_visible = False
 toc_alpha = 0
@@ -38,6 +36,18 @@ def _update_toc_surface():
     global base_directories
     global toc_column_1
 
+    def _draw_row(text_x, text_y, selected, bounds, surface):
+        if selected:
+            # Make a copy of the original rect
+            item_bounds = bounds.copy()
+            item_bounds.height = TOC_FONT_SIZE
+            item_bounds.y = text_y
+            pygame.draw.rect(surface, WHITE, item_bounds)
+            text_surface = font.render(item, True, BLACK_TRANSPARENT)
+        else:
+            text_surface = font.render(item, True, WHITE)
+        surface.blit(text_surface, (text_x + TOC_TEXT_X_OFFSET, text_y + TOC_TEXT_Y_OFFSET))
+
     # Define colors
     WHITE = (255, 255, 255)
     BLACK_TRANSPARENT = (0, 0, 0, 128)  # Black with 50% alpha
@@ -49,18 +59,50 @@ def _update_toc_surface():
                      border_radius=TOC_RADIUS - TOC_STROKE)
 
     font = pygame.font.SysFont(None, TOC_FONT_SIZE)
+
+    # Draw column 1.
+    directories, files, selected_row = get_TOC_column_1_directories_files()
     text_x = toc_column_1.left
     text_y = toc_column_1.top
-    for item in base_directories:
-        text_surface = font.render(item, True, WHITE)
-        toc_surface.blit(text_surface, (text_x, text_y))
+    row = 0
+    for item in directories:
+        _draw_row(text_x, text_y, row == selected_row, toc_column_1, toc_surface)
         text_y = text_y + TOC_FONT_SIZE
+        row = row + 1
+    for item in files:
+        _draw_row(text_x, text_y, row == selected_row, toc_column_1, toc_surface)
+        text_y = text_y + TOC_FONT_SIZE
+        row = row + 1
 
+    # Draw column 2.
+    directories, files, selected_row = get_TOC_column_2_directories_files()
+    text_x = toc_column_2.left
+    text_y = toc_column_2.top
+    row = 0
+    for item in directories:
+        _draw_row(text_x, text_y, row == selected_row, toc_column_2, toc_surface)
+        text_y = text_y + TOC_FONT_SIZE
+        row = row + 1
+    for item in files:
+        _draw_row(text_x, text_y, row == selected_row, toc_column_2, toc_surface)
+        text_y = text_y + TOC_FONT_SIZE
+        row = row + 1
 
-def init_TOC(base_path, screen_wide, screen_tall):
-    global directory_path
-    global base_directories
-    global base_files
+    # Draw column 3.
+    directories, files, selected_row = get_TOC_column_3_directories_files()
+    text_x = toc_column_3.left
+    text_y = toc_column_3.top
+    row = 0
+    for item in directories:
+        _draw_row(text_x, text_y, row == selected_row, toc_column_3, toc_surface)
+        text_y = text_y + TOC_FONT_SIZE
+        row = row + 1
+    for item in files:
+        _draw_row(text_x, text_y, row == selected_row, toc_column_3, toc_surface)
+        text_y = text_y + TOC_FONT_SIZE
+        row = row + 1
+
+def init_TOC(screen_wide, screen_tall):
     global toc_x
     global toc_y
     global toc_wide
@@ -70,8 +112,6 @@ def init_TOC(base_path, screen_wide, screen_tall):
     global toc_column_2
     global toc_column_3
     global toc_column_4
-
-    directory_path = base_path
 
     toc_x = 10  # X position
     toc_y = 10  # Y position
@@ -83,21 +123,11 @@ def init_TOC(base_path, screen_wide, screen_tall):
     column_tall = toc_tall - (TOC_MARGIN * 2)
     toc_column_1 = pygame.Rect(TOC_MARGIN, TOC_MARGIN, column_wide, column_tall)
     toc_column_2 = pygame.Rect(TOC_MARGIN + column_wide + COLUMN_H_PADDING, TOC_MARGIN, column_wide, column_tall)
-    toc_column_3 = pygame.Rect(TOC_MARGIN + column_wide + (COLUMN_H_PADDING * 2), TOC_MARGIN, column_wide, column_tall)
-    toc_column_4 = pygame.Rect(TOC_MARGIN + column_wide + (COLUMN_H_PADDING * 3), TOC_MARGIN, column_wide, column_tall)
-
-    # Get a list of file and directory names
-    contents = os.listdir(directory_path)
-
-    for item in contents:
-        item_path = os.path.join(directory_path, item)
-        if os.path.isdir(item_path):
-            base_directories.append(item)
-        elif item_path.endswith('.pdf'):
-            base_files.append(item)
+    toc_column_3 = pygame.Rect(TOC_MARGIN + (column_wide * 2) + (COLUMN_H_PADDING * 2), TOC_MARGIN, column_wide, column_tall)
+    toc_column_4 = pygame.Rect(TOC_MARGIN + (column_wide * 3) + (COLUMN_H_PADDING * 3), TOC_MARGIN, column_wide, column_tall)
 
 
-def handle_TOC() -> bool:
+def handle_TOC()->bool:
     global toc_visible
     global toc_alpha
     global toc_timer
@@ -146,3 +176,25 @@ def toggle_TOC(screen):
     else:
         toc_timer = time.time()  # Reset HUD visibility
     toc_dirty = True
+
+
+def update_TOC():
+    global toc_dirty
+
+    _update_toc_surface()
+    toc_dirty = True
+
+
+def activate_TOC():
+    global toc_visible
+    global toc_timer
+    global toc_dirty
+
+    if not toc_visible:
+        return False
+
+    toc_visible = False
+    toc_timer = time.time()  # Reset HUD visibility
+    toc_dirty = True
+    if is_TOC_selection_changed():
+        return True

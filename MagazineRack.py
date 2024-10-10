@@ -94,12 +94,17 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         # Render the text on top of the rectangle
         screen.blit(text_surface, (hud_x + NAV_HUD_PADDING, hud_y + NAV_HUD_PADDING // 2))
 
+    def load_magazine():
+        path = selected_TOC_path()
+        return
+
+
     def handle_left_key():
         dirty = False
         if is_TOC_visible():
             dirty = left_TOC_event()
             if dirty:
-                play_fail_sound()
+                update_TOC()
         else:
             dirty = left_magazine_event()
             if dirty:
@@ -115,7 +120,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         if is_TOC_visible():
             dirty = right_TOC_event()
             if dirty:
-                play_fail_sound()
+                update_TOC()
         else:
             dirty = right_magazine_event()
             if dirty:
@@ -128,15 +133,21 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
 
     def handle_up_key():
         if is_TOC_visible():
-            if up_TOC_event():
-                play_fail_sound()
-
+            dirty = up_TOC_event()
+            if dirty:
+                update_TOC()
 
     def handle_down_key():
         if is_TOC_visible():
-            if down_TOC_event():
-                play_fail_sound()
+            dirty = down_TOC_event()
+            if dirty:
+                update_TOC()
 
+    def handle_enter_key():
+        if is_TOC_visible():
+            dirty = activate_TOC()
+            if dirty:
+                load_magazine()
 
     # Function to render the current page
     def render_magazine_spread(current_page):
@@ -193,6 +204,8 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
                     handle_down_key()
                 elif event.key == pygame.K_SPACE:
                     toggle_TOC(screen)
+                elif event.key == pygame.K_RETURN:
+                    handle_enter_key()
 
             elif event.type == pygame.QUIT:
                 running = False
@@ -212,8 +225,9 @@ max_width = screen_width // 2
 max_height = screen_height
 pygame.display.set_caption("Magazine Rack")
 
+init_TOC_Data ('content')
 pdf_path = "content/Popular Science/1960\'s/Popular Science 1963/1963-08 Popular Science.pdf"
-init_TOC('content', screen_width, screen_height)
+init_TOC(screen_width, screen_height)
 pdf_document = init_magazine(pdf_path)
 total_pages = pdf_document.page_count
 current_page = 1
