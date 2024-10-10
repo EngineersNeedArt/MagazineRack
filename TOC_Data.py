@@ -9,7 +9,7 @@ directories_column_3 = []
 files_column_3 = []
 directories_column_4 = []
 files_column_4 = []
-active_column = 1
+active_column = 0
 column_1_selected_row = None
 column_2_selected_row = None
 column_3_selected_row = None
@@ -98,55 +98,218 @@ def _get_column_4_directories_and_files():
     directories_column_4, files_column_4 = _get_directories_files_at_path(path)
 
 
-def _up_active_column():
+def _select_start():
     global active_column
-    global directories_column_1
-    global files_column_1
     global column_1_selected_row
     global column_2_selected_row
     global selection_changed
+    active_column = 1
+    column_1_selected_row = 0
+    selection_changed = True
+    column_2_selected_row = None
+    _get_column_2_directories_and_files()
+    return True
+
+
+def _select_end():
+    global active_column
+    global column_1_selected_row
+    global column_2_selected_row
+    global selection_changed
+    active_column = 1
+    column_1_selected_row = _count_directories_files_for_column(1) - 1
+    selection_changed = True
+    column_2_selected_row = None
+    _get_column_2_directories_and_files()
+    return True
+
+
+def _left_active_column():
+    global active_column
+    global column_2_selected_row
+    global column_3_selected_row
+    global column_4_selected_row
+    global selection_changed
+
+    if active_column == 0:
+        return _select_start()
+
+    # Retard to active column to left.
+    if active_column > 1:
+        active_column = active_column - 1
 
     if active_column == 1:
-        if column_1_selected_row is None:
-#           column_1_selected_row = 0
-            column_1_selected_row = len(directories_column_1) + len(files_column_1) - 1
+        column_2_selected_row = None
+        selection_changed = True
+        return True
+
+    if active_column == 2:
+        column_3_selected_row = None
+        selection_changed = True
+        return True
+
+    if active_column == 3:
+        column_4_selected_row = None
+        selection_changed = True
+        return True
+
+    return False
+
+def _right_active_column():
+    global active_column
+    global column_1_selected_row
+    global column_2_selected_row
+    global column_3_selected_row
+    global column_4_selected_row
+    global selection_changed
+
+    # No column is active yet.
+    if active_column == 0:
+        return _select_start()
+
+    # Advance to column to right.
+    if active_column < 4:
+        next_column = active_column + 1
+
+    row_count = _count_directories_files_for_column(next_column)
+    if row_count == 0:
+        return False
+
+    active_column = next_column
+
+    if active_column == 2:
+        column_2_selected_row = 0
+        selection_changed = True
+        _get_column_3_directories_and_files()
+        return True
+
+    if active_column == 3:
+        column_3_selected_row = 0
+        selection_changed = True
+        _get_column_4_directories_and_files()
+        return True
+
+    if active_column == 4:
+        column_4_selected_row = 0
+        selection_changed = True
+        return True
+
+    return False
+
+
+def _up_active_column():
+    global active_column
+    global column_1_selected_row
+    global column_2_selected_row
+    global column_3_selected_row
+    global column_4_selected_row
+    global selection_changed
+
+    if active_column == 0:
+        return _select_end()
+
+    if active_column == 1:
+        if column_1_selected_row > 0:
+            column_1_selected_row = column_1_selected_row - 1
             selection_changed = True
         else:
-            if column_1_selected_row > 0:
-                column_1_selected_row = column_1_selected_row - 1
-                selection_changed = True
-            else:
-                return False
+            return False
 
         column_2_selected_row = None
         _get_column_2_directories_and_files()
         return True
+
+    if active_column == 2:
+        if column_2_selected_row > 0:
+            column_2_selected_row = column_2_selected_row - 1
+            selection_changed = True
+        else:
+            return False
+
+        column_3_selected_row = None
+        _get_column_3_directories_and_files()
+        return True
+
+    if active_column == 3:
+        if column_3_selected_row > 0:
+            column_3_selected_row = column_3_selected_row - 1
+            selection_changed = True
+        else:
+            return False
+
+        column_4_selected_row = None
+        _get_column_4_directories_and_files()
+        return True
+
+    if active_column == 4:
+        if column_4_selected_row > 0:
+            column_3_selected_row = column_4_selected_row - 1
+            selection_changed = True
+        else:
+            return False
+        return True
+
+    return False
 
 
 def _down_active_column():
     global active_column
-    global directories_column_1
-    global files_column_1
     global column_1_selected_row
     global column_2_selected_row
+    global column_3_selected_row
+    global column_4_selected_row
     global selection_changed
 
+    if active_column == 0:
+        return _select_start()
+
     if active_column == 1:
-        if column_1_selected_row is None:
-#           column_1_selected_row = len(directories_column_1) + len(files_column_1) - 1
-            column_1_selected_row = 0
+        num_rows = _count_directories_files_for_column(1)
+        if (column_1_selected_row + 1) < num_rows:
+            column_1_selected_row = column_1_selected_row + 1
             selection_changed = True
         else:
-            num_rows = len(directories_column_1) + len(files_column_1)
-            if (column_1_selected_row + 1) < num_rows:
-                column_1_selected_row = column_1_selected_row + 1
-                selection_changed = True
-            else:
-                return False
+            return False
 
         column_2_selected_row = None
         _get_column_2_directories_and_files()
         return True
+
+    if active_column == 2:
+        num_rows = _count_directories_files_for_column(2)
+        if (column_2_selected_row + 1) < num_rows:
+            column_2_selected_row = column_2_selected_row + 1
+            selection_changed = True
+        else:
+            return False
+
+        column_3_selected_row = None
+        _get_column_3_directories_and_files()
+        return True
+
+    if active_column == 3:
+        num_rows = _count_directories_files_for_column(3)
+        if (column_3_selected_row + 1) < num_rows:
+            column_3_selected_row = column_3_selected_row + 1
+            selection_changed = True
+        else:
+            return False
+
+        column_4_selected_row = None
+        _get_column_4_directories_and_files()
+        return True
+
+    if active_column == 4:
+        num_rows = _count_directories_files_for_column(4)
+        if (column_4_selected_row + 1) < num_rows:
+            column_4_selected_row = column_4_selected_row + 1
+            selection_changed = True
+        else:
+            return False
+        return True
+
+    return False
+
 
 def _count_directories_files_for_column (column_index):
     global directories_column_1
@@ -167,38 +330,6 @@ def _count_directories_files_for_column (column_index):
     if column_index == 4:
         return len(directories_column_4) + len(files_column_4)
     return 0
-
-
-def _right_active_column():
-    global active_column
-    global column_1_selected_row
-    global column_2_selected_row
-    global column_3_selected_row
-    global selection_changed
-
-    # Advance to column to right.
-    if active_column < 4:
-        active_column = active_column + 1
-
-    row_count = _count_directories_files_for_column(active_column)
-
-    if active_column == 2:
-        if row_count <= 0:
-            return False
-        column_2_selected_row = 0
-        selection_changed = True
-        _get_column_3_directories_and_files()
-        return True
-
-    if active_column == 3:
-        if row_count <= 0:
-            return False
-        column_3_selected_row = 0
-        selection_changed = True
-        _get_column_4_directories_and_files()
-        return True
-
-    return False
 
 
 def init_TOC_Data(base_path):
@@ -240,14 +371,7 @@ def selected_TOC_path():
 
 
 def left_TOC_event()->bool:
-    global column_1_selected_row
-    global selection_changed
-
-    if column_1_selected_row is None:
-        column_1_selected_row = 0
-        selection_changed = True
-        return True
-    return False
+    return _left_active_column()
 
 
 def right_TOC_event()->bool:
