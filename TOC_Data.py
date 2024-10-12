@@ -22,52 +22,75 @@ def _get_directory_path_for_column (column_index):
     global directories_column_1
     global directories_column_2
     global directories_column_3
+    global directories_column_4
+    global files_column_1
+    global files_column_2
+    global files_column_3
+    global files_column_4
     global column_1_selected_row
     global column_2_selected_row
     global column_3_selected_row
+    global column_4_selected_row
 
     path = directory_path
     if column_index == 1:
         return path
 
-    if (column_1_selected_row is not None) and (column_1_selected_row < len(directories_column_1)):
-        path = os.path.join(path, directories_column_1[column_1_selected_row])
-    else:
-        path = None
-
+    if (column_1_selected_row is not None) and (column_1_selected_row < (len(directories_column_1) + len(files_column_1))):
+        if column_1_selected_row < len(directories_column_1):
+            last_component = directories_column_1[column_1_selected_row]
+        else:
+            last_component = files_column_1[column_1_selected_row - len(directories_column_1)]
+        path = os.path.join(path, last_component)
     if column_index == 2:
         return path
 
-    if (column_2_selected_row is not None) and (column_2_selected_row < len(directories_column_2)):
-        path = os.path.join(path, directories_column_2[column_2_selected_row])
-    else:
-        path = None
-
+    if (column_2_selected_row is not None) and (column_2_selected_row < (len(directories_column_2) + len(files_column_2))):
+        if column_2_selected_row < len(directories_column_2):
+            last_component = directories_column_2[column_2_selected_row]
+        else:
+            last_component = files_column_2[column_2_selected_row - len(directories_column_2)]
+        path = os.path.join(path, last_component)
     if column_index == 3:
         return path
 
-    if (column_3_selected_row is not None) and (column_3_selected_row < len(directories_column_3)):
-        path = os.path.join(path, directories_column_3[column_3_selected_row])
-    else:
-        path = None
+    if (column_3_selected_row is not None) and (column_3_selected_row < (len(directories_column_3) + len(files_column_3))):
+        if column_3_selected_row < len(directories_column_3):
+            last_component = directories_column_3[column_3_selected_row]
+        else:
+            last_component = files_column_3[column_3_selected_row - len(directories_column_3)]
+        path = os.path.join(path, last_component)
+    if column_index == 4:
+        return path
+
+    if (column_4_selected_row is not None) and (column_4_selected_row < (len(directories_column_4) + len(files_column_4))):
+        if column_4_selected_row < len(directories_column_4):
+            last_component = directories_column_4[column_4_selected_row]
+        else:
+            last_component = files_column_4[column_4_selected_row - len(directories_column_4)]
+        path = os.path.join(path, last_component)
     return path
 
 
-def _get_directories_files_at_path(path, remove_prefix = None):
+def _path_is_directory(path)->bool:
+    return os.path.isdir(path)
+
+
+def _get_directories_files_at_path(path):
     directories = []
     files = []
 
-    if path is not None:
+    if (path is not None) and _path_is_directory(path):
         contents = os.listdir(path)
         for item in contents:
             item_path = os.path.join(path, item)
-            if os.path.isdir(item_path):
+            if _path_is_directory(item_path):
                 directories.append(item)
             elif item_path.endswith('.pdf'):
-                item_name = item[:-4]  # Removes the last 4 characters ('.pdf')
-                if (remove_prefix is not None) and (item_name.startswith(remove_prefix)):
-                    item_name = item_name[len(remove_prefix):]
-                files.append(item_name)
+#                item_name = item[:-4]  # Removes the last 4 characters ('.pdf')
+#                if (remove_prefix is not None) and (item_name.startswith(remove_prefix)):
+#                    item_name = item_name[len(remove_prefix):]
+                files.append(item)
         directories.sort()
         files.sort()
     return directories, files
@@ -99,9 +122,8 @@ def _get_column_4_directories_and_files():
     global directories_column_1
     global directories_column_4
     global files_column_4
-    prefix = directories_column_1[column_1_selected_row]
     path = _get_directory_path_for_column(4)
-    directories_column_4, files_column_4 = _get_directories_files_at_path(path, prefix)
+    directories_column_4, files_column_4 = _get_directories_files_at_path(path)
 
 
 def _select_start():
@@ -400,7 +422,8 @@ def is_TOC_selection_changed()->bool:
 def selected_TOC_path():
     global directories_column_1
     global column_1_selected_row
-    return directories_column_1[column_1_selected_row]
+    path = _get_directory_path_for_column(0)
+    return path
 
 
 def left_TOC_event()->bool:

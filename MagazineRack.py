@@ -7,9 +7,24 @@ from Sounds import *
 from TOC import *
 from TOC_Data import *
 
-
-# Set DEBUG flag
+# DEBUG flag
 DEBUG = True  # Is not FULLSCREEN in Debug mode.
+
+
+current_page = 0
+
+
+def load_magazine(path):
+    global current_page
+
+    if path is None:
+            return
+
+    document = init_magazine(path)
+    current_page = 1
+    set_pdf_document(document)
+#   display_name = "Popular Science (Aug 1963)"
+    display_pdf_pages_two_up(path, current_page)
 
 
 def display_pdf_pages_two_up(pdf_path, initial_page_number):
@@ -94,10 +109,6 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         # Render the text on top of the rectangle
         screen.blit(text_surface, (hud_x + NAV_HUD_PADDING, hud_y + NAV_HUD_PADDING // 2))
 
-    def load_magazine():
-        path = selected_TOC_path()
-        return
-
 
     def handle_left_key():
         dirty = False
@@ -147,7 +158,8 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         if is_TOC_visible():
             dirty = activate_TOC()
             if dirty:
-                load_magazine()
+                path = selected_TOC_path()
+                load_magazine(path)
 
     # Function to render the current page
     def render_magazine_spread(current_page):
@@ -156,7 +168,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         elif current_page > 1:
             left_page_number = current_page if current_page % 2 == 0 else current_page - 1
             right_page_number = left_page_number + 1
-            if right_page_number > total_pages:
+            if right_page_number > get_magazine_page_count():
                 right_page_number = None
             left_page = left_page_number - 1
             right_page = right_page_number - 1 if right_page_number else None
@@ -176,7 +188,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
             current_page = get_current_magazine_page()
             render_magazine_spread(current_page)
 #            if hud_alpha > 0:
-#                render_nav_hud(current_page, total_pages, hud_alpha)
+#                render_nav_hud(current_page, get_magazine_page_count(), hud_alpha)
             render_TOC(screen)
             pygame.display.flip()
             dirty = False
@@ -226,11 +238,7 @@ max_height = screen_height
 pygame.display.set_caption("Magazine Rack")
 
 init_TOC_Data ('content')
-pdf_path = "content/Popular Science/1960\'s/Popular Science 1963/1963-08 Popular Science.pdf"
 init_TOC(screen_width, screen_height)
-pdf_document = init_magazine(pdf_path)
-total_pages = pdf_document.page_count
-current_page = 1
-set_pdf_document(pdf_document)
-display_name = "Popular Science (Aug 1963)"
-display_pdf_pages_two_up(pdf_path, current_page)
+
+path = "content/Popular Science/1960\'s/Popular Science 1963/1963-08 Popular Science.pdf"
+load_magazine(path)

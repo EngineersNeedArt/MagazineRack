@@ -38,7 +38,7 @@ def _update_toc_surface():
     global base_directories
     global toc_column_1
 
-    def _draw_row(text_x, text_y, selected, bounds, surface):
+    def _draw_row(item, text_x, text_y, selected, bounds, surface):
         if selected:
             # Make a copy of the original rect
             item_bounds = bounds.copy()
@@ -49,6 +49,17 @@ def _update_toc_surface():
         else:
             text_surface = narrow_font.render(item, True, WHITE)
         surface.blit(text_surface, (text_x + TOC_TEXT_X_OFFSET, text_y + TOC_TEXT_Y_OFFSET))
+
+    def _draw_column(directories, files, selected_row, text_x, text_y):
+        row = 0
+        for item in directories:
+            _draw_row(item, text_x, text_y, row == selected_row, toc_column_1, toc_surface)
+            text_y = text_y + TOC_CELL_HEIGHT
+            row = row + 1
+        for item in files:
+            _draw_row(item, text_x, text_y, row == selected_row, toc_column_1, toc_surface)
+            text_y = text_y + TOC_CELL_HEIGHT
+            row = row + 1
 
     # Define colors
     WHITE = (255, 255, 255)
@@ -62,59 +73,20 @@ def _update_toc_surface():
 
     # Draw column 1.
     directories, files, selected_row = get_TOC_column_1_directories_files()
-    text_x = toc_column_1.left
-    text_y = toc_column_1.top
-    row = 0
-    for item in directories:
-        _draw_row(text_x, text_y, row == selected_row, toc_column_1, toc_surface)
-        text_y = text_y + TOC_CELL_HEIGHT
-        row = row + 1
-    for item in files:
-        _draw_row(text_x, text_y, row == selected_row, toc_column_1, toc_surface)
-        text_y = text_y + TOC_CELL_HEIGHT
-        row = row + 1
+    _draw_column(directories, files, selected_row, toc_column_1.left, toc_column_1.top)
 
     # Draw column 2.
     directories, files, selected_row = get_TOC_column_2_directories_files()
-    text_x = toc_column_2.left
-    text_y = toc_column_2.top
-    row = 0
-    for item in directories:
-        _draw_row(text_x, text_y, row == selected_row, toc_column_2, toc_surface)
-        text_y = text_y + TOC_CELL_HEIGHT
-        row = row + 1
-    for item in files:
-        _draw_row(text_x, text_y, row == selected_row, toc_column_2, toc_surface)
-        text_y = text_y + TOC_CELL_HEIGHT
-        row = row + 1
+    _draw_column(directories, files, selected_row, toc_column_2.left, toc_column_2.top)
 
     # Draw column 3.
     directories, files, selected_row = get_TOC_column_3_directories_files()
-    text_x = toc_column_3.left
-    text_y = toc_column_3.top
-    row = 0
-    for item in directories:
-        _draw_row(text_x, text_y, row == selected_row, toc_column_3, toc_surface)
-        text_y = text_y + TOC_CELL_HEIGHT
-        row = row + 1
-    for item in files:
-        _draw_row(text_x, text_y, row == selected_row, toc_column_3, toc_surface)
-        text_y = text_y + TOC_CELL_HEIGHT
-        row = row + 1
+    _draw_column(directories, files, selected_row, toc_column_3.left, toc_column_3.top)
 
     # Draw column 4.
     directories, files, selected_row = get_TOC_column_4_directories_files()
-    text_x = toc_column_4.left
-    text_y = toc_column_4.top
-    row = 0
-    for item in directories:
-        _draw_row(text_x, text_y, row == selected_row, toc_column_4, toc_surface)
-        text_y = text_y + TOC_CELL_HEIGHT
-        row = row + 1
-    for item in files:
-        _draw_row(text_x, text_y, row == selected_row, toc_column_4, toc_surface)
-        text_y = text_y + TOC_CELL_HEIGHT
-        row = row + 1
+    _draw_column(directories, files, selected_row, toc_column_4.left, toc_column_4.top)
+
 
 def init_TOC(screen_wide, screen_tall):
     global toc_x

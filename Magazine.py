@@ -18,6 +18,10 @@ def get_magazine_document():
     global pdf_document
     return pdf_document
 
+def get_magazine_page_count():
+    global total_pages
+    return total_pages
+
 def get_current_magazine_page()->int:
     global current_page
     return current_page
