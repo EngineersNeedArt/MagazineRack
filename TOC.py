@@ -30,40 +30,59 @@ toc_column_3 = pygame.Rect(0, 0, 0, 0)
 toc_column_4 = pygame.Rect(0, 0, 0, 0)
 narrow_font: Optional[pygame.font.Font] = None
 
+# Define colors
+WHITE = (255, 255, 255)
+ACTIVE_COLOR = (255, 255, 255)
+INACTIVE_COLOR = (160, 160, 160)
+BLACK_TRANSPARENT = (0, 0, 0, 128)  # Black with 50% alpha
+
+
+def _draw_row(item, text_x, text_y, selected, active, bounds, surface):
+    if selected:
+        # Make a copy of the original rect
+        item_bounds = bounds.copy()
+        item_bounds.height = TOC_CELL_HEIGHT
+        item_bounds.y = text_y
+        if active:
+            pygame.draw.rect(surface, ACTIVE_COLOR, item_bounds)
+        else:
+            pygame.draw.rect(surface, INACTIVE_COLOR, item_bounds)
+        text_surface = narrow_font.render(item, True, BLACK_TRANSPARENT)
+    else:
+        text_surface = narrow_font.render(item, True, WHITE)
+    surface.blit(text_surface, (text_x + TOC_TEXT_X_OFFSET, text_y + TOC_TEXT_Y_OFFSET))
+
+
+def _draw_column(directories, files, selected_row, active, text_x, text_y, bounds, surface):
+    prefixes = []
+    row = 0
+    for item in directories:
+        _draw_row(item, text_x, text_y, row == selected_row, active, bounds, surface)
+        if row == selected_row:
+            prefixes.append(item)
+        text_y = text_y + TOC_CELL_HEIGHT
+        row = row + 1
+    for item in files:
+        item_name = item[:-4]  # Removes the last 4 characters ('.pdf')
+        # Remove "prefix": any portion of text that matches an element in the path.
+        for one_prefix in prefixes:
+            if (item_name.startswith(one_prefix)):
+                item_name = item_name[len(one_prefix):]
+        _draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface)
+        text_y = text_y + TOC_CELL_HEIGHT
+        row = row + 1
 
 def _update_toc_surface():
+    global toc_column_1
+    global toc_column_2
+    global toc_column_3
+    global toc_column_4
     global toc_wide
     global toc_tall
     global toc_surface
     global base_directories
-    global toc_column_1
 
-    def _draw_row(item, text_x, text_y, selected, bounds, surface):
-        if selected:
-            # Make a copy of the original rect
-            item_bounds = bounds.copy()
-            item_bounds.height = TOC_CELL_HEIGHT
-            item_bounds.y = text_y
-            pygame.draw.rect(surface, WHITE, item_bounds)
-            text_surface = narrow_font.render(item, True, BLACK_TRANSPARENT)
-        else:
-            text_surface = narrow_font.render(item, True, WHITE)
-        surface.blit(text_surface, (text_x + TOC_TEXT_X_OFFSET, text_y + TOC_TEXT_Y_OFFSET))
-
-    def _draw_column(directories, files, selected_row, text_x, text_y):
-        row = 0
-        for item in directories:
-            _draw_row(item, text_x, text_y, row == selected_row, toc_column_1, toc_surface)
-            text_y = text_y + TOC_CELL_HEIGHT
-            row = row + 1
-        for item in files:
-            _draw_row(item, text_x, text_y, row == selected_row, toc_column_1, toc_surface)
-            text_y = text_y + TOC_CELL_HEIGHT
-            row = row + 1
-
-    # Define colors
-    WHITE = (255, 255, 255)
-    BLACK_TRANSPARENT = (0, 0, 0, 128)  # Black with 50% alpha
+    active_column = active_TOC_column()
 
     # Draw the rounded rectangle
     pygame.draw.rect(toc_surface, WHITE, (0, 0, toc_wide, toc_tall), border_radius=TOC_RADIUS)
@@ -73,19 +92,19 @@ def _update_toc_surface():
 
     # Draw column 1.
     directories, files, selected_row = get_TOC_column_1_directories_files()
-    _draw_column(directories, files, selected_row, toc_column_1.left, toc_column_1.top)
+    _draw_column(directories, files, selected_row, active_column == 1, toc_column_1.left, toc_column_1.top, toc_column_1, toc_surface)
 
     # Draw column 2.
     directories, files, selected_row = get_TOC_column_2_directories_files()
-    _draw_column(directories, files, selected_row, toc_column_2.left, toc_column_2.top)
+    _draw_column(directories, files, selected_row, active_column == 2, toc_column_2.left, toc_column_2.top, toc_column_2, toc_surface)
 
     # Draw column 3.
     directories, files, selected_row = get_TOC_column_3_directories_files()
-    _draw_column(directories, files, selected_row, toc_column_3.left, toc_column_3.top)
+    _draw_column(directories, files, selected_row, active_column == 3, toc_column_3.left, toc_column_3.top, toc_column_3, toc_surface)
 
     # Draw column 4.
     directories, files, selected_row = get_TOC_column_4_directories_files()
-    _draw_column(directories, files, selected_row, toc_column_4.left, toc_column_4.top)
+    _draw_column(directories, files, selected_row, active_column == 4, toc_column_4.left, toc_column_4.top, toc_column_4, toc_surface)
 
 
 def init_TOC(screen_wide, screen_tall):

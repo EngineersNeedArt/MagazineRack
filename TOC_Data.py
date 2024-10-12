@@ -426,6 +426,11 @@ def selected_TOC_path():
     return path
 
 
+def active_TOC_column()->int:
+    global active_column
+    return active_column
+
+
 def left_TOC_event()->bool:
     return _left_active_column()
 
