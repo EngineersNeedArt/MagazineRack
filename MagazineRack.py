@@ -10,9 +10,7 @@ from TOC_Data import *
 # DEBUG flag
 DEBUG = True  # Is not FULLSCREEN in Debug mode.
 
-
 current_page = 0
-
 
 def load_magazine(path):
     global current_page

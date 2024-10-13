@@ -53,11 +53,30 @@ def _draw_row(item, text_x, text_y, selected, active, bounds, surface):
     surface.blit(text_surface, (text_x + TOC_TEXT_X_OFFSET, text_y + TOC_TEXT_Y_OFFSET))
 
 
-def _draw_column(directories, files, selected_row, active, text_x, text_y, bounds, surface):
-    prefixes = []
+def _draw_column(directories, files, selected_row, active, prefixes, column_index, surface):
+    global toc_column_1
+    global toc_column_2
+    global toc_column_3
+    global toc_column_4
+    if column_index == 1:
+        bounds = toc_column_1
+    elif column_index == 2:
+        bounds = toc_column_2
+    elif column_index == 3:
+        bounds = toc_column_3
+    else:
+        bounds = toc_column_4
+
+    text_x = bounds.left
+    text_y = bounds.top
     row = 0
     for item in directories:
-        _draw_row(item, text_x, text_y, row == selected_row, active, bounds, surface)
+        item_name = item
+        if column_index > 1:
+            for one_prefix in prefixes:
+                if (item_name.startswith(one_prefix)):
+                    item_name = item_name[len(one_prefix):]
+        _draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface)
         if row == selected_row:
             prefixes.append(item)
         text_y = text_y + TOC_CELL_HEIGHT
@@ -68,20 +87,19 @@ def _draw_column(directories, files, selected_row, active, text_x, text_y, bound
         for one_prefix in prefixes:
             if (item_name.startswith(one_prefix)):
                 item_name = item_name[len(one_prefix):]
+        if (item_name.startswith(' - ')):
+            item_name = item_name[3:]
         _draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface)
         text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
 
 def _update_toc_surface():
-    global toc_column_1
-    global toc_column_2
-    global toc_column_3
-    global toc_column_4
     global toc_wide
     global toc_tall
     global toc_surface
     global base_directories
 
+    prefixes = []
     active_column = active_TOC_column()
 
     # Draw the rounded rectangle
@@ -92,19 +110,19 @@ def _update_toc_surface():
 
     # Draw column 1.
     directories, files, selected_row = get_TOC_column_1_directories_files()
-    _draw_column(directories, files, selected_row, active_column == 1, toc_column_1.left, toc_column_1.top, toc_column_1, toc_surface)
+    _draw_column(directories, files, selected_row, active_column == 1, prefixes, 1, toc_surface)
 
     # Draw column 2.
     directories, files, selected_row = get_TOC_column_2_directories_files()
-    _draw_column(directories, files, selected_row, active_column == 2, toc_column_2.left, toc_column_2.top, toc_column_2, toc_surface)
+    _draw_column(directories, files, selected_row, active_column == 2, prefixes, 2, toc_surface)
 
     # Draw column 3.
     directories, files, selected_row = get_TOC_column_3_directories_files()
-    _draw_column(directories, files, selected_row, active_column == 3, toc_column_3.left, toc_column_3.top, toc_column_3, toc_surface)
+    _draw_column(directories, files, selected_row, active_column == 3, prefixes, 3, toc_surface)
 
     # Draw column 4.
     directories, files, selected_row = get_TOC_column_4_directories_files()
-    _draw_column(directories, files, selected_row, active_column == 4, toc_column_4.left, toc_column_4.top, toc_column_4, toc_surface)
+    _draw_column(directories, files, selected_row, active_column == 4, prefixes, 4, toc_surface)
 
 
 def init_TOC(screen_wide, screen_tall):
@@ -156,7 +174,6 @@ def render_TOC(screen):
     global toc_x
     global toc_y
     global toc_surface
-
     if not toc_dirty:
         return
 
@@ -175,7 +192,6 @@ def toggle_TOC(screen):
     global toc_alpha
     global toc_timer
     global toc_dirty
-
     toc_visible = not toc_visible
     if toc_visible:
         _update_toc_surface()
@@ -187,7 +203,6 @@ def toggle_TOC(screen):
 
 def update_TOC():
     global toc_dirty
-
     _update_toc_surface()
     toc_dirty = True
 
@@ -196,7 +211,6 @@ def activate_TOC():
     global toc_visible
     global toc_timer
     global toc_dirty
-
     if not toc_visible:
         return False
 
