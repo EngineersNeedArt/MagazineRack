@@ -6,7 +6,7 @@ from Pages import *
 from Magazine import *
 from Sounds import *
 from TOC import *
-from TOC_Data import TOC_Data
+from toc_data import TOC_Data
 
 # DEBUG flag
 DEBUG = True  # Is not FULLSCREEN in Debug mode.
