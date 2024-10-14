@@ -1,7 +1,7 @@
 import pygame
 import time
 from typing import Optional
-from TOC_Data import *
+#from TOC_Data import TOC_Data
 
 
 # TOC HUD settings
@@ -93,14 +93,14 @@ def _draw_column(directories, files, selected_row, active, prefixes, column_inde
         text_y = text_y + TOC_CELL_HEIGHT
         row = row + 1
 
-def _update_toc_surface():
+def _update_toc_surface(toc_data_source):
     global toc_wide
     global toc_tall
     global toc_surface
     global base_directories
 
     prefixes = []
-    active_column = active_TOC_column()
+    active_column = toc_data_source.get_active_column()
 
     # Draw the rounded rectangle
     pygame.draw.rect(toc_surface, WHITE, (0, 0, toc_wide, toc_tall), border_radius=TOC_RADIUS)
@@ -109,19 +109,19 @@ def _update_toc_surface():
                      border_radius=TOC_RADIUS - TOC_STROKE)
 
     # Draw column 1.
-    directories, files, selected_row = get_TOC_column_1_directories_files()
+    directories, files, selected_row = toc_data_source.directories_and_files_for_column(1)
     _draw_column(directories, files, selected_row, active_column == 1, prefixes, 1, toc_surface)
 
     # Draw column 2.
-    directories, files, selected_row = get_TOC_column_2_directories_files()
+    directories, files, selected_row = toc_data_source.directories_and_files_for_column(2)
     _draw_column(directories, files, selected_row, active_column == 2, prefixes, 2, toc_surface)
 
     # Draw column 3.
-    directories, files, selected_row = get_TOC_column_3_directories_files()
+    directories, files, selected_row = toc_data_source.directories_and_files_for_column(3)
     _draw_column(directories, files, selected_row, active_column == 3, prefixes, 3, toc_surface)
 
     # Draw column 4.
-    directories, files, selected_row = get_TOC_column_4_directories_files()
+    directories, files, selected_row = toc_data_source.directories_and_files_for_column(4)
     _draw_column(directories, files, selected_row, active_column == 4, prefixes, 4, toc_surface)
 
 
@@ -187,27 +187,27 @@ def is_TOC_visible()->bool:
     return toc_visible
 
 
-def toggle_TOC(screen):
+def toggle_TOC(toc_data_source):
     global toc_visible
     global toc_alpha
     global toc_timer
     global toc_dirty
     toc_visible = not toc_visible
     if toc_visible:
-        _update_toc_surface()
+        _update_toc_surface(toc_data_source)
         toc_alpha = 255
     else:
         toc_timer = time.time()  # Reset HUD visibility
     toc_dirty = True
 
 
-def update_TOC():
+def update_TOC(toc_data_source):
     global toc_dirty
-    _update_toc_surface()
+    _update_toc_surface(toc_data_source)
     toc_dirty = True
 
 
-def activate_TOC():
+def activate_TOC(toc_data_source):
     global toc_visible
     global toc_timer
     global toc_dirty
@@ -217,5 +217,5 @@ def activate_TOC():
     toc_visible = False
     toc_timer = time.time()  # Reset HUD visibility
     toc_dirty = True
-    if is_TOC_selection_changed():
+    if toc_data_source.did_selection_change():
         return True

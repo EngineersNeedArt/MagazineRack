@@ -17,15 +17,13 @@ def _resize_image(img, max_width, max_height):
     img_width, img_height = img.size
     img_ratio = img_width / img_height
     max_ratio = max_width / max_height
-
     if img_ratio > max_ratio:
         new_width = max_width
         new_height = int(new_width / img_ratio)
     else:
         new_height = max_height
         new_width = int(new_height * img_ratio)
-
-    return img.resize((new_width, new_height), Image.LANCZOS)
+    return img.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
 # Render page to image and cache it
 def render_page_to_image(page_num, max_width, max_height):

@@ -1,42 +1,40 @@
+import os
 import pygame
 from PIL import Image
+from HUD import *
 from Pages import *
-import time
 from Magazine import *
 from Sounds import *
 from TOC import *
-from TOC_Data import *
+from TOC_Data import TOC_Data
 
 # DEBUG flag
 DEBUG = True  # Is not FULLSCREEN in Debug mode.
 
-current_page = 0
+display_name = 'popsci'
+dirty = False  # Track when rendering is needed
+
 
 def load_magazine(path):
-    global current_page
-
+    global display_name
+    global dirty
     if path is None:
-            return
-
+        return
     document = init_magazine(path)
-    current_page = 1
+    display_name = os.path.basename(path)
+    display_name = display_name[:-4]  # Removes the last 4 characters ('.pdf')
     set_pdf_document(document)
-#   display_name = "Popular Science (Aug 1963)"
+    current_page = get_current_magazine_page()
     display_pdf_pages_two_up(path, current_page)
+    dirty = True
+    show_HUD(display_name, current_page, get_magazine_page_count())
 
 
 def display_pdf_pages_two_up(pdf_path, initial_page_number):
     global screen
     global screen_width
     global screen_height
-
-    # Navigation HUD settings
-    NAV_HUD_DISPLAY_TIME = 3  # HUD fully visible for 3 seconds
-    NAV_HUD_FADE_TIME = 1  # 1 second to fade out
-    NAV_HUD_RADIUS = 11  # Your preferred radius
-    NAV_FONT_SIZE = 28  # Your preferred font size
-    NAV_HUD_Y_OFFSET = 8  # Your preferred offset from the bottom
-    NAV_HUD_PADDING = 20  # Padding inside HUD
+    global dirty
 
     # Center the image
     def display_page_centered(page_index, screen):
@@ -73,91 +71,64 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         screen.blit(pygame_left_image, (left_x, center_y))
         screen.blit(pygame_right_image, (right_x, center_y))
 
-    # Function to render HUD (page number, etc.)
-    def render_nav_hud(current_page, total_pages, alpha):
-        font = pygame.font.SysFont(None, NAV_FONT_SIZE)
-        next_page = None
-        if current_page > 1:
-            next_page = current_page + 1
-            if next_page > total_pages:
-                next_page = None
-        if next_page is not None:
-            text = f"{display_name} — Page {current_page}, {current_page + 1} of {total_pages}"
-        else:
-            text = f"{display_name} — Page {current_page} of {total_pages}"
-        text_surface = font.render(text, True, (255, 255, 255))
-
-        # Apply transparency to text
-        text_surface.set_alpha(alpha)
-
-        # Get text size
-        text_rect = text_surface.get_rect()
-
-        # Define the rectangle for the HUD
-        hud_width = text_rect.width + NAV_HUD_PADDING * 2
-        hud_height = text_rect.height + NAV_HUD_PADDING
-        hud_x = (screen_width - hud_width) // 2
-        hud_y = screen_height - hud_height - NAV_HUD_Y_OFFSET  # Centered near bottom
-
-        # Draw the rounded rectangle
-        rect_surface = pygame.Surface((hud_width, hud_height), pygame.SRCALPHA)
-        pygame.draw.rect(rect_surface, (0, 0, 0, alpha / 2), (0, 0, hud_width, hud_height), border_radius=NAV_HUD_RADIUS)
-        screen.blit(rect_surface, (hud_x, hud_y))
-
-        # Render the text on top of the rectangle
-        screen.blit(text_surface, (hud_x + NAV_HUD_PADDING, hud_y + NAV_HUD_PADDING // 2))
-
 
     def handle_left_key():
+        global display_name
+        global dirty
         dirty = False
         if is_TOC_visible():
-            dirty = left_TOC_event()
+            dirty = toc_data_source.left_TOC_event()
             if dirty:
-                update_TOC()
+                update_TOC(toc_data_source)
         else:
             dirty = left_magazine_event()
             if dirty:
-                #                           hud_timer = time.time()  # Reset HUD visibility
-                #                           hud_alpha = 255  # Reset alpha to full opacity
+                show_HUD(display_name, get_current_magazine_page(), get_magazine_page_count())
                 play_right_sound()
             else:
                 play_fail_sound()
         return dirty
 
     def handle_right_key():
+        global display_name
+        global dirty
         dirty = False
         if is_TOC_visible():
-            dirty = right_TOC_event()
+            dirty = toc_data_source.right_TOC_event()
             if dirty:
-                update_TOC()
+                update_TOC(toc_data_source)
         else:
             dirty = right_magazine_event()
             if dirty:
-                #                           hud_timer = time.time()  # Reset HUD visibility
-                #                           hud_alpha = 255  # Reset alpha to full opacity
+                show_HUD(display_name, get_current_magazine_page(), get_magazine_page_count())
                 play_right_sound()
             else:
                 play_fail_sound()
         return dirty
 
     def handle_up_key():
+        global dirty
         if is_TOC_visible():
-            dirty = up_TOC_event()
+            dirty = toc_data_source.up_TOC_event()
             if dirty:
-                update_TOC()
+                update_TOC(toc_data_source)
 
     def handle_down_key():
+        global dirty
         if is_TOC_visible():
-            dirty = down_TOC_event()
+            dirty = toc_data_source.down_TOC_event()
             if dirty:
-                update_TOC()
+                update_TOC(toc_data_source)
 
     def handle_enter_key():
+        global display_name
+        global dirty
         if is_TOC_visible():
-            dirty = activate_TOC()
+            dirty = activate_TOC(toc_data_source)
             if dirty:
-                path = selected_TOC_path()
+                path = toc_data_source.selected_path()
                 load_magazine(path)
+
 
     # Function to render the current page
     def render_magazine_spread(current_page):
@@ -172,35 +143,20 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
             right_page = right_page_number - 1 if right_page_number else None
             display_pages_two_up(left_page, right_page, screen)
 
-    dirty = True  # Track when rendering is needed
-    hud_alpha = 255
-    hud_timer = time.time()  # Track HUD visibility time
-
-    # Set key repeat with a delay of 200ms and repeat interval of 50ms
-    pygame.key.set_repeat(1000, 200)
 
     running = True
     while running:
         toc_dirty = handle_TOC()
-        if toc_dirty or dirty:  # Only render when needed
+        hud_dirty = handle_HUD()
+        if toc_dirty or hud_dirty or dirty:  # Only render when needed
             current_page = get_current_magazine_page()
             render_magazine_spread(current_page)
-#            if hud_alpha > 0:
-#                render_nav_hud(current_page, get_magazine_page_count(), hud_alpha)
-            render_TOC(screen)
+            if hud_dirty:
+                render_HUD(screen, screen_width, screen_height)
+            if toc_dirty:
+                render_TOC(screen)
             pygame.display.flip()
             dirty = False
-
-        # Handle fade-out timing
-#        elapsed_time = time.time() - hud_timer
-#        if elapsed_time > NAV_HUD_DISPLAY_TIME:
-#            if elapsed_time - NAV_HUD_DISPLAY_TIME < NAV_HUD_FADE_TIME:
-#                hud_alpha = int(255 * (1 - (elapsed_time - NAV_HUD_DISPLAY_TIME) / NAV_HUD_FADE_TIME))
-#                dirty = True
-#            else:
-#                if hud_alpha != 0:
-#                    dirty = True
-#                hud_alpha = 0  # Fully faded out
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -213,10 +169,9 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
                 elif event.key == pygame.K_DOWN:
                     handle_down_key()
                 elif event.key == pygame.K_SPACE:
-                    toggle_TOC(screen)
+                    toggle_TOC(toc_data_source)
                 elif event.key == pygame.K_RETURN:
                     handle_enter_key()
-
             elif event.type == pygame.QUIT:
                 running = False
 
@@ -225,7 +180,8 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
 
 # Example usage
 pygame.init()
-#    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+pygame.key.set_repeat(1000, 200)
+
 if DEBUG:
     screen = pygame.display.set_mode((1024, 768))
 else:
@@ -235,7 +191,8 @@ max_width = screen_width // 2
 max_height = screen_height
 pygame.display.set_caption("Magazine Rack")
 
-init_TOC_Data ('content')
+init_HUD()
+toc_data_source = TOC_Data ('content')
 init_TOC(screen_width, screen_height)
 
 path = "content/Popular Science/1960\'s/Popular Science 1963/1963-08 Popular Science.pdf"
