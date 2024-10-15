@@ -3,7 +3,6 @@ import pygame
 from PIL import Image
 from typing import Optional
 from hud import HUD
-from Pages import *
 from magazine import Magazine
 from Sounds import *
 from toc import TOC
@@ -26,7 +25,6 @@ def load_magazine(path):
     document = magazine.get_document()
     display_name = os.path.basename(path)
     display_name = display_name[:-4]  # Removes the last 4 characters ('.pdf')
-    set_pdf_document(document)
     current_page = magazine.get_current_page()
     display_pdf_pages_two_up(path, current_page, magazine)
     dirty = True
@@ -40,8 +38,8 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number, magazine):
     global dirty
 
     # Center the image
-    def display_page_centered(page_index, screen):
-        img = render_page_to_image(page_index, max_width, max_height)
+    def display_page_centered(page_index, screen, magazine):
+        img = magazine.image_for_page(page_index, max_width, max_height)
         img_width, img_height = img.size
         mode = img.mode
         data = img.tobytes()
@@ -52,9 +50,9 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number, magazine):
         screen.blit(pygame_image, (x_pos, y_pos))
         
     # Display two-up.
-    def display_pages_two_up(left_index, right_index, screen):
-        left_img = render_page_to_image(left_index, max_width, max_height)
-        right_img = render_page_to_image(right_index, max_width, max_height)
+    def display_pages_two_up(left_index, right_index, screen, magazine):
+        left_img = magazine.image_for_page(left_index, max_width, max_height)
+        right_img = magazine.image_for_page(right_index, max_width, max_height)
 
         mode_left = left_img.mode
         size_left = left_img.size
@@ -136,7 +134,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number, magazine):
     # Function to render the current page
     def render_magazine_spread(current_page):
         if current_page == 1:
-            display_page_centered(0, screen)
+            display_page_centered(0, screen, magazine)
         elif current_page > 1:
             left_page_number = current_page if current_page % 2 == 0 else current_page - 1
             right_page_number = left_page_number + 1
@@ -144,7 +142,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number, magazine):
                 right_page_number = None
             left_page = left_page_number - 1
             right_page = right_page_number - 1 if right_page_number else None
-            display_pages_two_up(left_page, right_page, screen)
+            display_pages_two_up(left_page, right_page, screen, magazine)
 
 
     running = True
