@@ -4,7 +4,7 @@ from PIL import Image
 from typing import Optional
 from hud import HUD
 from magazine import Magazine
-from Sounds import *
+from sound_effects import SoundEffects
 from toc import TOC
 from toc_data import TOC_Data
 
@@ -14,6 +14,7 @@ DEBUG = True  # Is not FULLSCREEN in Debug mode.
 
 display_name = 'popsci'
 dirty = False  # Track when rendering is needed
+sound_effects = SoundEffects ()
 
 
 def load_magazine(path):
@@ -22,7 +23,6 @@ def load_magazine(path):
     if path is None:
         return
     magazine = Magazine(path)
-    document = magazine.get_document()
     display_name = os.path.basename(path)
     display_name = display_name[:-4]  # Removes the last 4 characters ('.pdf')
     current_page = magazine.get_current_page()
@@ -73,7 +73,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number, magazine):
         screen.blit(pygame_right_image, (right_x, center_y))
 
 
-    def handle_left_key(magazine):
+    def handle_left_key(magazine, sound_effects):
         global display_name
         global dirty
         dirty = False
@@ -85,12 +85,12 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number, magazine):
             dirty = magazine.go_prev_page()
             if dirty:
                 hud.show(display_name, magazine.get_current_page(), magazine.get_page_count())
-                play_right_sound()
+                sound_effects.play_left()
             else:
-                play_fail_sound()
+                sound_effects.play_fail()
         return dirty
 
-    def handle_right_key(magazine):
+    def handle_right_key(magazine, sound_effects):
         global display_name
         global dirty
         dirty = False
@@ -102,9 +102,9 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number, magazine):
             dirty = magazine.go_next_page()
             if dirty:
                 hud.show(display_name, magazine.get_current_page(), magazine.get_page_count())
-                play_right_sound()
+                sound_effects.play_right()
             else:
-                play_fail_sound()
+                sound_effects.play_fail()
         return dirty
 
     def handle_up_key():
@@ -162,9 +162,9 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number, magazine):
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    dirty = handle_left_key(magazine)
+                    dirty = handle_left_key(magazine, sound_effects)
                 elif event.key == pygame.K_RIGHT:
-                    dirty = handle_right_key(magazine)
+                    dirty = handle_right_key(magazine, sound_effects)
                 elif event.key == pygame.K_UP:
                     handle_up_key()
                 elif event.key == pygame.K_DOWN:
@@ -191,7 +191,6 @@ screen_width, screen_height = screen.get_size()
 max_width = screen_width // 2
 max_height = screen_height
 pygame.display.set_caption("Magazine Rack")
-
 hud = HUD ()
 toc_data_source = TOC_Data ('content')
 toc = TOC(screen_width, screen_height)
