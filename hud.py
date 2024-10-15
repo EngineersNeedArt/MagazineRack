@@ -13,6 +13,7 @@ class HUD:
 
     def __init__(self):
         self.font = pygame.font.SysFont(None, self.FONT_SIZE)
+        self.visible = False
 
 
     # Function to render HUD (page number, etc.)
@@ -46,13 +47,6 @@ class HUD:
         self.surface.blit(text_surface, (self.PADDING, self.PADDING // 2))
 
 
-    def show(self, display_name, display_page, display_page_count):
-        self.start_time = time.time()   # Reset HUD visibility
-        self.alpha = 255                # Reset alpha to full opacity
-        self._prepare_surface(display_name, display_page, display_page_count)
-        self.dirty = True
-
-
     def handle(self):
         if self.alpha > 0:   # Handle fade-out timing.
             elapsed_time = time.time() - self.start_time
@@ -64,18 +58,29 @@ class HUD:
                     if self.alpha != 0:
                         self.dirty = True
                     self.alpha = 0  # Fully faded out
+                    self.visible = False
         return self.dirty
 
 
     def render(self, screen):
-        if self.dirty:
+        if self.visible:
             screen_width, screen_height = screen.get_size()
             x = (screen_width - self.hud_width) // 2
             y = screen_height - self.height - self.Y_OFFSET  # Centered near bottom
             self.surface.set_alpha(self.alpha)
             screen.blit(self.surface, (x, y))
-        self.dirty = False
 
+
+    def is_visible(self)->bool:
+        return self.visible
+
+
+    def show(self, display_name, display_page, display_page_count):
+        self.start_time = time.time()   # Reset HUD visibility
+        self.alpha = 255                # Reset alpha to full opacity
+        self._prepare_surface(display_name, display_page, display_page_count)
+        self.dirty = True
+        self.visible = True
 
 
 

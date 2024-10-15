@@ -161,9 +161,9 @@ class MagazineRack:
     def _update_screen(self):
         if self.toc_dirty or self.hud_dirty or self.dirty:  # Only render when needed
             self._render_magazine_spread()
-            if self.hud_dirty:
+            if self.hud.is_visible():
                 self.hud.render(self.screen)
-            if self.toc_dirty:
+            if self.toc.is_visible():
                 self.toc.render(self.screen)
             pygame.display.flip()
             self.dirty = False

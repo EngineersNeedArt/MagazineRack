@@ -9,6 +9,10 @@ class SoundEffects:
         self.fail_sound = pygame.mixer.Sound('ankh.wav')
 
 
+    def play_open(self):
+        self.right_sound.play()
+
+
     def play_right(self):
         self.right_sound.play()
 
@@ -19,4 +23,5 @@ class SoundEffects:
 
     def play_fail(self):
         self.fail_sound.play()
+
 

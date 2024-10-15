@@ -133,10 +133,8 @@ class TOC:
 
 
     def render(self, screen):
-        if self.dirty:
-            self.surface.set_alpha(self.alpha)
-            screen.blit(self.surface, (self.x_loc, self.y_loc))
-            self.dirty = False
+        self.surface.set_alpha(self.alpha)
+        screen.blit(self.surface, (self.x_loc, self.y_loc))
 
 
     def is_visible(self)->bool:
