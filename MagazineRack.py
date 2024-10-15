@@ -1,7 +1,7 @@
 import os
 import pygame
 from PIL import Image
-from HUD import *
+from hud import HUD
 from Pages import *
 from Magazine import *
 from Sounds import *
@@ -83,7 +83,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         else:
             dirty = left_magazine_event()
             if dirty:
-                show_HUD(display_name, get_current_magazine_page(), get_magazine_page_count())
+                hud.show(display_name, get_current_magazine_page(), get_magazine_page_count())
                 play_right_sound()
             else:
                 play_fail_sound()
@@ -100,7 +100,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         else:
             dirty = right_magazine_event()
             if dirty:
-                show_HUD(display_name, get_current_magazine_page(), get_magazine_page_count())
+                hud.show(display_name, get_current_magazine_page(), get_magazine_page_count())
                 play_right_sound()
             else:
                 play_fail_sound()
@@ -147,12 +147,12 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
     running = True
     while running:
         toc_dirty = handle_TOC()
-        hud_dirty = handle_HUD()
+        hud_dirty = hud.handle()
         if toc_dirty or hud_dirty or dirty:  # Only render when needed
             current_page = get_current_magazine_page()
             render_magazine_spread(current_page)
             if hud_dirty:
-                render_HUD(screen, screen_width, screen_height)
+                hud.render(screen, screen_width, screen_height)
             if toc_dirty:
                 render_TOC(screen)
             pygame.display.flip()
@@ -191,7 +191,7 @@ max_width = screen_width // 2
 max_height = screen_height
 pygame.display.set_caption("Magazine Rack")
 
-init_HUD()
+hud = HUD ()
 toc_data_source = TOC_Data ('content')
 init_TOC(screen_width, screen_height)
 
