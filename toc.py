@@ -1,6 +1,5 @@
 import pygame
 import time
-from typing import Optional
 
 
 class TOC:
@@ -15,35 +14,22 @@ class TOC:
     TEXT_X_OFFSET = 3
     TEXT_Y_OFFSET = 1
 
-    visible = False
-    alpha = 0
-    dirty = False
-    timer: float = 0
-    x_loc = 0
-    y_loc = 0
-    width = 0
-    height = 0
-    surface: Optional[pygame.Surface] = None
-    column_1 = pygame.Rect(0, 0, 0, 0)
-    column_2 = pygame.Rect(0, 0, 0, 0)
-    column_3 = pygame.Rect(0, 0, 0, 0)
-    column_4 = pygame.Rect(0, 0, 0, 0)
-    narrow_font: Optional[pygame.font.Font] = None
-
     # Define colors
     WHITE = (255, 255, 255)
     ACTIVE_COLOR = (255, 255, 255)
     INACTIVE_COLOR = (160, 160, 160)
     BLACK_TRANSPARENT = (0, 0, 0, 128)  # Black with 50% alpha
 
-
     def __init__(self, screen_wide, screen_tall):
+        self.visible = False
+        self.alpha = 0
+        self.dirty = False
+        self.start_timer = 0
         self.x_loc = 10  # X position
         self.y_loc = 10  # Y position
         self.width = screen_wide - 20  # Width
         self.toc_tall = screen_tall - 20  # Height
         self.surface = pygame.Surface((self.width, self.toc_tall), pygame.SRCALPHA)
-
         column_wide = (self.width - ((self.MARGIN * 2) + (self.COLUMN_H_PADDING * 3))) // 4
         column_tall = self.toc_tall - (self.MARGIN * 2)
         self.column_1 = pygame.Rect(self.MARGIN, self.MARGIN, column_wide, column_tall)
@@ -137,7 +123,7 @@ class TOC:
 
     def handle(self)->bool:
         if (not self.visible) and (self.alpha > 0):
-            elapsed_time = time.time() - self.timer  # Handle fade-out timing
+            elapsed_time = time.time() - self.start_time  # Handle fade-out timing
             if elapsed_time < self.FADE_TIME:
                 self.alpha = int(255 * (self.FADE_TIME - elapsed_time))
             else:
@@ -147,40 +133,37 @@ class TOC:
 
 
     def render(self, screen):
-        if not self.dirty:
-            return
-
-        self.surface.set_alpha(self.alpha)
-        screen.blit(self.surface, (self.x_loc, self.y_loc))
-        self.dirty = False
+        if self.dirty:
+            self.surface.set_alpha(self.alpha)
+            screen.blit(self.surface, (self.x_loc, self.y_loc))
+            self.dirty = False
 
 
     def is_visible(self)->bool:
         return self.visible
 
 
-    def toggle(self, toc_data_source):
+    def hide(self):
+        self.visible = False
+        self.start_time = time.time()  # Reset HUD visibility
+        self.dirty = True
+
+
+    def show(self, data_source):
+        self._prepare_surface(data_source)
+        self.alpha = 255
+        self.dirty = True
+
+
+    def toggle(self, data_source):
         self.visible = not self.visible
         if self.visible:
-            self._prepare_surface(toc_data_source)
-            self.alpha = 255
+            self.show(data_source)
         else:
-            self.timer = time.time()  # Reset HUD visibility
-        self.dirty = True
+            self.hide()
 
 
     def update(self, toc_data_source):
         self._prepare_surface(toc_data_source)
         self.dirty = True
-
-
-    def activate(self, toc_data_source):
-        if not self.visible:
-            return False
-
-        self.visible = False
-        self.timer = time.time()  # Reset HUD visibility
-        self.dirty = True
-        if toc_data_source.did_selection_change():
-            return True
 

@@ -2,25 +2,24 @@ import os
 
 
 class TOC_Data:
-    directory_path = None
-    directories_column_1 = []
-    files_column_1 = []
-    directories_column_2 = []
-    files_column_2 = []
-    directories_column_3 = []
-    files_column_3 = []
-    directories_column_4 = []
-    files_column_4 = []
-    active_column = 0
-    column_1_selected_row = None
-    column_2_selected_row = None
-    column_3_selected_row = None
-    column_4_selected_row = None
-    selection_changed = False
 
     def __init__(self, base_path):
         self.directory_path = base_path
+        self.directories_column_1 = []
+        self.files_column_1 = []
+        self.directories_column_2 = []
+        self.files_column_2 = []
+        self.directories_column_3 = []
+        self.files_column_3 = []
+        self.directories_column_4 = []
+        self.files_column_4 = []
         self._get_directories_and_files_for_column(1)
+        self.active_column = 0
+        self.column_1_selected_row = None
+        self.column_2_selected_row = None
+        self.column_3_selected_row = None
+        self.column_4_selected_row = None
+        self.selection_changed = False
 
 
     @staticmethod
@@ -332,18 +331,18 @@ class TOC_Data:
         return self.active_column
 
 
-    def left_TOC_event(self)->bool:
+    def go_left(self)->bool:
         return self._left_active_column()
 
 
-    def right_TOC_event(self)->bool:
+    def go_right(self)->bool:
         return self._right_active_column()
 
 
-    def up_TOC_event(self)->bool:
+    def go_up(self)->bool:
         return self._up_active_column()
 
 
-    def down_TOC_event(self)->bool:
+    def go_down(self)->bool:
         return self._down_active_column()
 

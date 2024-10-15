@@ -4,15 +4,11 @@ from PIL import Image
 
 
 class Magazine:
-    pdf_document = None
-    total_pages = 0
-    current_page = 1
-    rendered_pages = {}
-
     def __init__(self, path, initial_page=1):
         self.pdf_document = fitz.open(path)
         self.total_pages = self.pdf_document.page_count
         self.current_page = initial_page
+        self.rendered_pages = {}
 
 
     def _resize_image(self, img, max_width, max_height):
@@ -43,14 +39,15 @@ class Magazine:
     def image_for_page(self, page_num, max_width, max_height):
         if page_num in self.rendered_pages:
             return self.rendered_pages[page_num]
+        else:
+            page = self.pdf_document.load_page(page_num)
+            pix = page.get_pixmap()
+            img_data = io.BytesIO(pix.tobytes("png"))
+            img = Image.open(img_data)
+            img = self._resize_image(img, max_width, max_height)
+            self.rendered_pages[page_num] = img
+            return img
 
-        page = self.pdf_document.load_page(page_num)
-        pix = page.get_pixmap()
-        img_data = io.BytesIO(pix.tobytes("png"))
-        img = Image.open(img_data)
-        img = self._resize_image(img, max_width, max_height)
-        self.rendered_pages[page_num] = img
-        return img
 
     def go_prev_page(self)->bool:
         if self.current_page > 1:
