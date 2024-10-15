@@ -5,7 +5,7 @@ from hud import HUD
 from Pages import *
 from Magazine import *
 from Sounds import *
-from TOC import *
+from toc import TOC
 from toc_data import TOC_Data
 
 # DEBUG flag
@@ -76,10 +76,10 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         global display_name
         global dirty
         dirty = False
-        if is_TOC_visible():
+        if toc.is_visible():
             dirty = toc_data_source.left_TOC_event()
             if dirty:
-                update_TOC(toc_data_source)
+                toc.update(toc_data_source)
         else:
             dirty = left_magazine_event()
             if dirty:
@@ -93,10 +93,10 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
         global display_name
         global dirty
         dirty = False
-        if is_TOC_visible():
+        if toc.is_visible():
             dirty = toc_data_source.right_TOC_event()
             if dirty:
-                update_TOC(toc_data_source)
+                toc.update(toc_data_source)
         else:
             dirty = right_magazine_event()
             if dirty:
@@ -108,23 +108,23 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
 
     def handle_up_key():
         global dirty
-        if is_TOC_visible():
+        if toc.is_visible():
             dirty = toc_data_source.up_TOC_event()
             if dirty:
-                update_TOC(toc_data_source)
+                toc.update(toc_data_source)
 
     def handle_down_key():
         global dirty
-        if is_TOC_visible():
+        if toc.is_visible():
             dirty = toc_data_source.down_TOC_event()
             if dirty:
-                update_TOC(toc_data_source)
+                toc.update(toc_data_source)
 
     def handle_enter_key():
         global display_name
         global dirty
-        if is_TOC_visible():
-            dirty = activate_TOC(toc_data_source)
+        if toc.is_visible():
+            dirty = toc.activate(toc_data_source)
             if dirty:
                 path = toc_data_source.selected_path()
                 load_magazine(path)
@@ -146,7 +146,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
 
     running = True
     while running:
-        toc_dirty = handle_TOC()
+        toc_dirty = toc.handle()
         hud_dirty = hud.handle()
         if toc_dirty or hud_dirty or dirty:  # Only render when needed
             current_page = get_current_magazine_page()
@@ -154,7 +154,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
             if hud_dirty:
                 hud.render(screen, screen_width, screen_height)
             if toc_dirty:
-                render_TOC(screen)
+                toc.render(screen)
             pygame.display.flip()
             dirty = False
 
@@ -169,7 +169,7 @@ def display_pdf_pages_two_up(pdf_path, initial_page_number):
                 elif event.key == pygame.K_DOWN:
                     handle_down_key()
                 elif event.key == pygame.K_SPACE:
-                    toggle_TOC(toc_data_source)
+                    toc.toggle(toc_data_source)
                 elif event.key == pygame.K_RETURN:
                     handle_enter_key()
             elif event.type == pygame.QUIT:
@@ -193,7 +193,7 @@ pygame.display.set_caption("Magazine Rack")
 
 hud = HUD ()
 toc_data_source = TOC_Data ('content')
-init_TOC(screen_width, screen_height)
+toc = TOC(screen_width, screen_height)
 
 path = "content/Popular Science/1960\'s/Popular Science 1963/1963-08 Popular Science.pdf"
 load_magazine(path)
