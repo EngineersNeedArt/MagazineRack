@@ -9,7 +9,7 @@ from toc_data import TOC_Data
 
 
 # DEBUG flag
-DEBUG = True  # Is not FULLSCREEN in Debug mode.
+DEBUG = False  # Is not FULLSCREEN in Debug mode.
 
 
 class MagazineRack:

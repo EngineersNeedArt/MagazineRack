@@ -18,7 +18,7 @@ class TOC:
     WHITE = (255, 255, 255)
     ACTIVE_COLOR = (255, 255, 255)
     INACTIVE_COLOR = (160, 160, 160)
-    BLACK_TRANSPARENT = (0, 0, 0, 128)  # Black with 50% alpha
+    BLACK_TRANSPARENT = (0, 0, 0, 192)  # Black with 50% alpha
 
     def __init__(self, screen_wide, screen_tall):
         self.visible = False

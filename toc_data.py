@@ -22,11 +22,6 @@ class TOC_Data:
         self.selection_changed = False
 
 
-    @staticmethod
-    def _path_is_directory(path) -> bool:
-        return os.path.isdir(path)
-
-
     def _get_directory_path_for_column(self, column_index):
         path = self.directory_path
         if column_index == 1:
@@ -76,11 +71,11 @@ class TOC_Data:
         directories = []
         files = []
 
-        if (path is not None) and TOC_Data._path_is_directory(path):
+        if (path is not None) and os.path.isdir(path):
             contents = os.listdir(path)
             for item in contents:
                 item_path = os.path.join(path, item)
-                if TOC_Data._path_is_directory(item_path):
+                if os.path.isdir(item_path):
                     directories.append(item)
                 elif item_path.endswith('.pdf'):
                     files.append(item)
@@ -170,9 +165,12 @@ class TOC_Data:
         if self.active_column == 0:
             return self._select_start()
 
+        # Already all the way to the right.
+        if self.active_column >= 4:
+            return False
+
         # Advance to column to right.
-        if self.active_column < 4:
-            next_column = self.active_column + 1
+        next_column = self.active_column + 1
         row_count = self._count_directories_files_for_column(next_column)
         if row_count == 0:
             return False
