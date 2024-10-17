@@ -74,11 +74,12 @@ class TOC_Data:
         if (path is not None) and os.path.isdir(path):
             contents = os.listdir(path)
             for item in contents:
-                item_path = os.path.join(path, item)
-                if os.path.isdir(item_path):
-                    directories.append(item)
-                elif item_path.endswith('.pdf'):
-                    files.append(item)
+                if not item.startswith('.'):
+                    item_path = os.path.join(path, item)
+                    if os.path.isdir(item_path):
+                        directories.append(item)
+                    elif item_path.endswith('.pdf'):
+                        files.append(item)
             directories.sort()
             files.sort()
         return directories, files

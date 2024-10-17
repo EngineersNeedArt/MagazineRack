@@ -14,6 +14,8 @@ class HUD:
     def __init__(self):
         self.font = pygame.font.SysFont(None, self.FONT_SIZE)
         self.visible = False
+        self.alpha = 0
+        self.dirty = False
 
 
     # Function to render HUD (page number, etc.)

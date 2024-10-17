@@ -31,6 +31,8 @@ class MagazineRack:
         self.toc = TOC(self.screen_width, self.screen_height)
         self.base_path = base_path
         self.is_running = True
+        self.dirty = False
+        self.magazine = None
 
 
     def _handle_left_key(self):
@@ -145,17 +147,18 @@ class MagazineRack:
 
 
     def _render_magazine_spread(self):
-        current_page = self.magazine.get_current_page()
-        if current_page == 1:
-            self._display_page_centered(0)
-        elif current_page > 1:
-            left_page_number = current_page if current_page % 2 == 0 else current_page - 1
-            right_page_number = left_page_number + 1
-            if right_page_number > self.magazine.get_page_count():
-                right_page_number = None
-            left_page = left_page_number - 1
-            right_page = right_page_number - 1 if right_page_number else None
-            self._display_pages_two_up(left_page, right_page)
+        if self.magazine:
+            current_page = self.magazine.get_current_page()
+            if current_page == 1:
+                self._display_page_centered(0)
+            elif current_page > 1:
+                left_page_number = current_page if current_page % 2 == 0 else current_page - 1
+                right_page_number = left_page_number + 1
+                if right_page_number > self.magazine.get_page_count():
+                    right_page_number = None
+                left_page = left_page_number - 1
+                right_page = right_page_number - 1 if right_page_number else None
+                self._display_pages_two_up(left_page, right_page)
 
 
     def _update_screen(self):
@@ -181,6 +184,7 @@ class MagazineRack:
 
 
     def run(self):
+        self.toc.show(self.toc_data)
         while self.is_running:
             self._handle_events()
             self.toc_dirty = self.toc.handle()
@@ -190,8 +194,6 @@ class MagazineRack:
 
 if __name__ == "__main__":
     app = MagazineRack('content')
-    path = "content/Popular Science/1960\'s/Popular Science 1963/1963-08 Popular Science.pdf"
-    app.load_magazine(path)
     app.run()
     pygame.quit()
     sys.exit()

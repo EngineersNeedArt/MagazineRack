@@ -24,7 +24,7 @@ class TOC:
         self.visible = False
         self.alpha = 0
         self.dirty = False
-        self.start_timer = 0
+        self.start_time = 0
         self.x_loc = 10  # X position
         self.y_loc = 10  # Y position
         self.width = screen_wide - 20  # Width
@@ -149,6 +149,7 @@ class TOC:
 
     def show(self, data_source):
         self._prepare_surface(data_source)
+        self.visible = True
         self.alpha = 255
         self.dirty = True
 
