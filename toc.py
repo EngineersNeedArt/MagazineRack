@@ -4,13 +4,13 @@ import time
 
 class TOC:
     # TOC HUD settings
-    FADE_TIME = 1  # 1 second to fade out
-    RADIUS = 7  # Preferred radius
-    STROKE = 3  # Stroke thickness
-    FONT_SIZE = 22  # Your preferred font size
-    CELL_HEIGHT = 28  # Your preferred font size
-    MARGIN = 8  # Padding inside TOC
-    COLUMN_H_PADDING = 8  # Padding between columns
+    FADE_TIME = 1           # 1 second to fade out
+    RADIUS = 7              # Preferred radius
+    STROKE = 3              # Stroke thickness
+    FONT_SIZE = 22          # Your preferred font size
+    CELL_HEIGHT = 28        # Your preferred font size
+    MARGIN = 8              # Padding inside TOC
+    COLUMN_H_PADDING = 8    # Padding between columns
     TEXT_X_OFFSET = 3
     TEXT_Y_OFFSET = 1
 
@@ -38,6 +38,8 @@ class TOC:
                                    column_tall)
         self.column_4 = pygame.Rect(self.MARGIN + (column_wide * 3) + (self.COLUMN_H_PADDING * 3), self.MARGIN, column_wide,
                                    column_tall)
+        self.CELL_HEIGHT = (column_tall - (self.STROKE * 2)) // 26
+        self.FONT_SIZE = (self.CELL_HEIGHT * 22) // 28
         self.narrow_font = pygame.font.Font("AsapCondensed-Medium.ttf", self.FONT_SIZE)
 
 
