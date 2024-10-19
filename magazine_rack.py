@@ -42,12 +42,13 @@ class MagazineRack:
             if self.dirty:
                 self.toc.update(self.toc_data)
         else:
-            self.dirty = self.magazine.go_prev_page()
-            if self.dirty:
-                self.hud.show(self.display_name, self.magazine.get_current_page(), self.magazine.get_page_count())
-                self.sound_effects.play_left()
-            else:
-                self.sound_effects.play_fail()
+            if self.magazine:
+                self.dirty = self.magazine.go_prev_page()
+                if self.dirty:
+                    self.hud.show(self.display_name, self.magazine.get_current_page(), self.magazine.get_page_count())
+                    self.sound_effects.play_left()
+                else:
+                    self.sound_effects.play_fail()
         return self.dirty
 
 
@@ -58,12 +59,13 @@ class MagazineRack:
             if self.dirty:
                 self.toc.update(self.toc_data)
         else:
-            self.dirty = self.magazine.go_next_page()
-            if self.dirty:
-                self.hud.show(self.display_name, self.magazine.get_current_page(), self.magazine.get_page_count())
-                self.sound_effects.play_right()
-            else:
-                self.sound_effects.play_fail()
+            if self.magazine:
+                self.dirty = self.magazine.go_next_page()
+                if self.dirty:
+                    self.hud.show(self.display_name, self.magazine.get_current_page(), self.magazine.get_page_count())
+                    self.sound_effects.play_right()
+                else:
+                    self.sound_effects.play_fail()
         return self.dirty
 
 
@@ -176,11 +178,12 @@ class MagazineRack:
         if path is None:
             return
         self.magazine = Magazine(path)
-        self.display_name = os.path.basename(path)
-        self.display_name = self.display_name[:-4]  # Removes the last 4 characters ('.pdf')
-        current_page = self.magazine.get_current_page()
-        self.dirty = True
-        self.hud.show(self.display_name, current_page, self.magazine.get_page_count())
+        if self.magazine:
+            self.display_name = os.path.basename(path)
+            self.display_name = self.display_name[:-4]  # Removes the last 4 characters ('.pdf')
+            current_page = self.magazine.get_current_page()
+            self.dirty = True
+            self.hud.show(self.display_name, current_page, self.magazine.get_page_count())
 
 
     def run(self):

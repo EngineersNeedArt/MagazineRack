@@ -38,12 +38,23 @@ class TOC:
                                    column_tall)
         self.column_4 = pygame.Rect(self.MARGIN + (column_wide * 3) + (self.COLUMN_H_PADDING * 3), self.MARGIN, column_wide,
                                    column_tall)
+
         self.CELL_HEIGHT = (column_tall - (self.STROKE * 2)) // 26
+
         self.FONT_SIZE = (self.CELL_HEIGHT * 22) // 28
         self.narrow_font = pygame.font.Font("AsapCondensed-Medium.ttf", self.FONT_SIZE)
 
+        self.ICON_WIDTH = self.CELL_HEIGHT
+        self.ICON_PADDING = 4
+        icon_image = pygame.image.load('magazine_icon.png')
+        self.magazine_icon = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
+        self.magazine_icon = self.magazine_icon.convert_alpha()
+        chevron_image = pygame.image.load('chevron.png')
+        self.chevron = pygame.transform.smoothscale(chevron_image, (self.ICON_WIDTH, self.ICON_WIDTH))
+        self.chevron = self.chevron.convert_alpha()
 
-    def _draw_row(self, item, text_x, text_y, selected, active, bounds, surface):
+
+    def _draw_row(self, item, text_x, text_y, selected, active, bounds, surface, is_file):
         if selected:
             # Make a copy of the original rect
             item_bounds = bounds.copy()
@@ -53,6 +64,14 @@ class TOC:
                 pygame.draw.rect(surface, self.ACTIVE_COLOR, item_bounds)
             else:
                 pygame.draw.rect(surface, self.INACTIVE_COLOR, item_bounds)
+
+        if is_file:
+            surface.blit(self.magazine_icon, (text_x + self.TEXT_X_OFFSET, text_y + self.TEXT_Y_OFFSET))
+            text_x += self.ICON_WIDTH + self.ICON_PADDING
+        elif selected:
+            surface.blit(self.chevron, (bounds.right - self.ICON_WIDTH, text_y + self.TEXT_Y_OFFSET))
+
+        if selected:
             text_surface = self.narrow_font.render(item, True, self.BLACK_TRANSPARENT)
         else:
             text_surface = self.narrow_font.render(item, True, self.WHITE)
@@ -78,7 +97,7 @@ class TOC:
                 for one_prefix in prefixes:
                     if (item_name.startswith(one_prefix)):
                         item_name = item_name[len(one_prefix):]
-            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface)
+            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, False)
             if row == selected_row:
                 prefixes.append(item)
             text_y = text_y + self.CELL_HEIGHT
@@ -91,7 +110,7 @@ class TOC:
                     item_name = item_name[len(one_prefix):]
             if (item_name.startswith(' - ')):
                 item_name = item_name[3:]
-            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface)
+            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, True)
             text_y = text_y + self.CELL_HEIGHT
             row = row + 1
 
