@@ -126,28 +126,29 @@ class MagazineRack:
 
     # Display two-up.
     def _display_pages_two_up(self, left_index, right_index):
-        left_img = self.magazine.image_for_page(left_index, self.max_width, self.max_height)
-        right_img = self.magazine.image_for_page(right_index, self.max_width, self.max_height)
-
-        mode_left = left_img.mode
-        size_left = left_img.size
-        data_left = left_img.tobytes()
-        pygame_left_image = pygame.image.fromstring(data_left, size_left, mode_left)
-
-        mode_right = right_img.mode
-        size_right = right_img.size
-        data_right = right_img.tobytes()
-        pygame_right_image = pygame.image.fromstring(data_right, size_right, mode_right)
-
-        left_x = (self.screen_width // 2 - size_left[0]) - 1
-        right_x = (self.screen_width // 2) + 1
-        center_y = (self.screen_height - size_left[1]) // 2
-
         self.screen.fill((0, 0, 0))
-        self.screen.blit(pygame_left_image, (left_x, center_y))
-        self.screen.blit(pygame_right_image, (right_x, center_y))
 
+        if left_index:
+            left_img = self.magazine.image_for_page(left_index, self.max_width, self.max_height)
+            mode_left = left_img.mode
+            size_left = left_img.size
+            data_left = left_img.tobytes()
+            pygame_left_image = pygame.image.fromstring(data_left, size_left, mode_left)
+            left_x = (self.screen_width // 2 - size_left[0]) - 1
+            center_y = (self.screen_height - size_left[1]) // 2
+            self.screen.blit(pygame_left_image, (left_x, center_y))
 
+        if right_index:
+            right_img = self.magazine.image_for_page(right_index, self.max_width, self.max_height)
+            mode_right = right_img.mode
+            size_right = right_img.size
+            data_right = right_img.tobytes()
+            pygame_right_image = pygame.image.fromstring(data_right, size_right, mode_right)
+            right_x = (self.screen_width // 2) + 1
+            center_y = (self.screen_height - size_right[1]) // 2
+            self.screen.blit(pygame_right_image, (right_x, center_y))
+
+    
     def _render_magazine_spread(self):
         if self.magazine:
             current_page = self.magazine.get_current_page()
