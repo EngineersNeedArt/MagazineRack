@@ -1,7 +1,7 @@
 import os
 
 
-class TOC_Data:
+class TOCData:
 
     def __init__(self, base_path):
         self.directory_path = base_path
@@ -344,4 +344,9 @@ class TOC_Data:
 
     def go_down(self)->bool:
         return self._down_active_column()
+
+
+    @staticmethod
+    def is_directory(path)->bool:
+        return os.path.isdir(path)
 

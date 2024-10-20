@@ -175,12 +175,13 @@ class TOC:
         self.dirty = True
 
 
-    def toggle(self, data_source):
+    def toggle(self, data_source)->bool:
         self.visible = not self.visible
         if self.visible:
             self.show(data_source)
         else:
             self.hide()
+        return self.visible
 
 
     def update(self, toc_data_source):

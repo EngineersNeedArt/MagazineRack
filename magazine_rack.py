@@ -5,7 +5,7 @@ from hud import HUD
 from magazine import Magazine
 from sound_effects import SoundEffects
 from toc import TOC
-from toc_data import TOC_Data
+from toc_data import TOCData
 
 
 # DEBUG flag
@@ -27,7 +27,7 @@ class MagazineRack:
         self.max_width = self.screen_width // 2
         self.max_height = self.screen_height
         self.hud = HUD()
-        self.toc_data = TOC_Data(base_path)
+        self.toc_data = TOCData(base_path)
         self.toc = TOC(self.screen_width, self.screen_height)
         self.base_path = base_path
         self.is_running = True
@@ -38,6 +38,7 @@ class MagazineRack:
     def _handle_left_key(self):
         self.dirty = False
         if self.toc.is_visible():
+            self.sound_effects.play_nav_left()
             self.dirty = self.toc_data.go_left()
             if self.dirty:
                 self.toc.update(self.toc_data)
@@ -46,7 +47,7 @@ class MagazineRack:
                 self.dirty = self.magazine.go_prev_page()
                 if self.dirty:
                     self.hud.show(self.display_name, self.magazine.get_current_page(), self.magazine.get_page_count())
-                    self.sound_effects.play_left()
+                    self.sound_effects.play_left_page()
                 else:
                     self.sound_effects.play_fail()
         return self.dirty
@@ -55,6 +56,7 @@ class MagazineRack:
     def _handle_right_key(self):
         self.dirty = False
         if self.toc.is_visible():
+            self.sound_effects.play_nav_right()
             self.dirty = self.toc_data.go_right()
             if self.dirty:
                 self.toc.update(self.toc_data)
@@ -63,7 +65,7 @@ class MagazineRack:
                 self.dirty = self.magazine.go_next_page()
                 if self.dirty:
                     self.hud.show(self.display_name, self.magazine.get_current_page(), self.magazine.get_page_count())
-                    self.sound_effects.play_right()
+                    self.sound_effects.play_right_page()
                 else:
                     self.sound_effects.play_fail()
         return self.dirty
@@ -71,6 +73,7 @@ class MagazineRack:
 
     def _handle_up_key(self):
         if self.toc.is_visible():
+            self.sound_effects.play_nav_up()
             self.dirty = self.toc_data.go_up()
             if self.dirty:
                 self.toc.update(self.toc_data)
@@ -78,6 +81,7 @@ class MagazineRack:
 
     def _handle_down_key(self):
         if self.toc.is_visible():
+            self.sound_effects.play_nav_down()
             self.dirty = self.toc_data.go_down()
             if self.dirty:
                 self.toc.update(self.toc_data)
@@ -85,9 +89,23 @@ class MagazineRack:
 
     def _handle_enter_key(self):
         if self.toc.is_visible():
-            self.toc.hide()
             path = self.toc_data.selected_path()
-            self.load_magazine(path)
+            if (path is None) or (TOCData.is_directory(path)):
+                self.sound_effects.play_fail()
+            else:
+                self.sound_effects.play_open_magazine()
+                self.toc.hide()
+                self.load_magazine(path)
+
+
+    def _handle_toc_toggle_key(self):
+        if self.magazine:
+            if self.toc.toggle(self.toc_data):
+                self.sound_effects.play_open_toc()
+            else:
+                self.sound_effects.play_close_toc()
+        else:
+            self.sound_effects.play_fail()
 
 
     def _handle_events(self):
@@ -104,7 +122,7 @@ class MagazineRack:
                 elif event.key == pygame.K_DOWN:
                     self._handle_down_key()
                 elif event.key == pygame.K_SPACE:
-                    self.toc.toggle(self.toc_data)
+                    self._handle_toc_toggle_key()
                 elif event.key == pygame.K_RETURN:
                     self._handle_enter_key()
             elif event.type == pygame.QUIT:
@@ -148,7 +166,7 @@ class MagazineRack:
             center_y = (self.screen_height - size_right[1]) // 2
             self.screen.blit(pygame_right_image, (right_x, center_y))
 
-    
+
     def _render_magazine_spread(self):
         if self.magazine:
             current_page = self.magazine.get_current_page()
@@ -176,8 +194,6 @@ class MagazineRack:
 
 
     def load_magazine(self, path):
-        if path is None:
-            return
         self.magazine = Magazine(path)
         if self.magazine:
             self.display_name = os.path.basename(path)
