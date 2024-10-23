@@ -1,3 +1,4 @@
 content/
 .DS_Store
 .idea/
+config.json

@@ -3,6 +3,7 @@ import pygame
 import sys
 from hud import HUD
 from magazine import Magazine
+from prefs import Prefs
 from sound_effects import SoundEffects
 from toc import TOC
 from toc_data import TOCData
@@ -31,8 +32,11 @@ class MagazineRack:
         self.toc = TOC(self.screen_width, self.screen_height)
         self.base_path = base_path
         self.is_running = True
+        self.display_name = ""
         self.dirty = False
         self.magazine = None
+        self.prefs = Prefs("config.json")
+        self.load_magazine (self.prefs.get("last_magazine_path"), self.prefs.get("last_page_index"))
 
 
     def _handle_left_key(self):
@@ -46,7 +50,8 @@ class MagazineRack:
             if self.magazine:
                 self.dirty = self.magazine.go_prev_page()
                 if self.dirty:
-                    self.hud.show(self.display_name, self.magazine.get_current_page(), self.magazine.get_page_count())
+                    self.prefs.set("last_page_index", self.magazine.current_page)
+                    self.hud.show(self.display_name, self.magazine.current_page, self.magazine.page_count)
                     self.sound_effects.play_left_page()
                 else:
                     self.sound_effects.play_fail()
@@ -64,7 +69,8 @@ class MagazineRack:
             if self.magazine:
                 self.dirty = self.magazine.go_next_page()
                 if self.dirty:
-                    self.hud.show(self.display_name, self.magazine.get_current_page(), self.magazine.get_page_count())
+                    self.prefs.set("last_page_index", self.magazine.current_page)
+                    self.hud.show(self.display_name, self.magazine.current_page, self.magazine.page_count)
                     self.sound_effects.play_right_page()
                 else:
                     self.sound_effects.play_fail()
@@ -95,7 +101,7 @@ class MagazineRack:
             else:
                 self.sound_effects.play_open_magazine()
                 self.toc.hide()
-                self.load_magazine(path)
+                self.load_magazine(path, 1)
 
 
     def _handle_toc_toggle_key(self):
@@ -169,13 +175,13 @@ class MagazineRack:
 
     def _render_magazine_spread(self):
         if self.magazine:
-            current_page = self.magazine.get_current_page()
+            current_page = self.magazine.current_page
             if current_page == 1:
                 self._display_page_centered(0)
             elif current_page > 1:
                 left_page_number = current_page if current_page % 2 == 0 else current_page - 1
                 right_page_number = left_page_number + 1
-                if right_page_number > self.magazine.get_page_count():
+                if right_page_number > self.magazine.page_count:
                     right_page_number = None
                 left_page = left_page_number - 1
                 right_page = right_page_number - 1 if right_page_number else None
@@ -193,18 +199,20 @@ class MagazineRack:
             self.dirty = False
 
 
-    def load_magazine(self, path):
-        self.magazine = Magazine(path)
+    def load_magazine(self, path, initial_page):
+        self.magazine = Magazine(path, initial_page)
         if self.magazine:
+            self.prefs.set("last_magazine_path", path)
             self.display_name = os.path.basename(path)
             self.display_name = self.display_name[:-4]  # Removes the last 4 characters ('.pdf')
-            current_page = self.magazine.get_current_page()
+            current_page = self.magazine.current_page
             self.dirty = True
-            self.hud.show(self.display_name, current_page, self.magazine.get_page_count())
+            self.hud.show(self.display_name, current_page, self.magazine.page_count)
 
 
     def run(self):
-        self.toc.show(self.toc_data)
+        if not self.magazine:
+            self.toc.show(self.toc_data)
         while self.is_running:
             self._handle_events()
             self.toc_dirty = self.toc.handle()
