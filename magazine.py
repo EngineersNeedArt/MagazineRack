@@ -5,9 +5,9 @@ from PIL import Image
 
 class Magazine:
     def __init__(self, path, initial_page=1):
-        self.pdf_document = fitz.open(path)
-        self._page_count = self.pdf_document.page_count
-        if not initial_page:
+        self._pdf_document = fitz.open(path)
+        self._page_count = self._pdf_document.page_count
+        if (not initial_page) or (initial_page > self._page_count):
             initial_page = 1
         self._current_page = initial_page
         self._rendered_pages = {}
@@ -35,11 +35,19 @@ class Magazine:
     def current_page(self) -> int:
         return self._current_page
 
+
+    def is_last_page(self) -> bool:
+        if (self._page_count % 2) == 0:
+            return self._current_page >= self._page_count
+        else:
+            return self._current_page >= self._page_count - 1
+
+
     def image_for_page(self, page_num, max_width, max_height):
         if page_num in self._rendered_pages:
             return self._rendered_pages[page_num]
         else:
-            page = self.pdf_document.load_page(page_num)
+            page = self._pdf_document.load_page(page_num)
             pix = page.get_pixmap()
             img_data = io.BytesIO(pix.tobytes("png"))
             img = Image.open(img_data)

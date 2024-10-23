@@ -32,11 +32,28 @@ class MagazineRack:
         self.toc = TOC(self.screen_width, self.screen_height)
         self.base_path = base_path
         self.is_running = True
+        self.magazine_key = ""
+        self.page_progress = 0
         self.display_name = ""
         self.dirty = False
         self.magazine = None
         self.prefs = Prefs("config.json")
+        self.progress_dict = self.prefs.get("magazine_progress_dict") or {}
         self.load_magazine (self.prefs.get("last_magazine_path"), self.prefs.get("last_page_index"))
+
+
+    def _store_page_progress(self):
+        current_page = self.magazine.current_page
+        self.prefs.set("last_page_index", current_page)
+        if (self.page_progress > 0) and (current_page > self.page_progress):
+            self.page_progress = current_page
+            # Special case when the magazine is complete, store 0 (zero).
+            if self.magazine.is_last_page():
+                self.page_progress = 0
+            magazine_dict = self.progress_dict.get(self.magazine_key) or {}
+            magazine_dict["page_progress"] = self.page_progress
+            self.progress_dict[self.magazine_key] = magazine_dict
+            self.prefs.set("magazine_progress_dict", self.progress_dict)
 
 
     def _handle_left_key(self):
@@ -50,7 +67,7 @@ class MagazineRack:
             if self.magazine:
                 self.dirty = self.magazine.go_prev_page()
                 if self.dirty:
-                    self.prefs.set("last_page_index", self.magazine.current_page)
+                    self._store_page_progress()
                     self.hud.show(self.display_name, self.magazine.current_page, self.magazine.page_count)
                     self.sound_effects.play_left_page()
                 else:
@@ -69,7 +86,7 @@ class MagazineRack:
             if self.magazine:
                 self.dirty = self.magazine.go_next_page()
                 if self.dirty:
-                    self.prefs.set("last_page_index", self.magazine.current_page)
+                    self._store_page_progress()
                     self.hud.show(self.display_name, self.magazine.current_page, self.magazine.page_count)
                     self.sound_effects.play_right_page()
                 else:
@@ -101,7 +118,7 @@ class MagazineRack:
             else:
                 self.sound_effects.play_open_magazine()
                 self.toc.hide()
-                self.load_magazine(path, 1)
+                self.load_magazine(path, None)
 
 
     def _handle_toc_toggle_key(self):
@@ -200,11 +217,24 @@ class MagazineRack:
 
 
     def load_magazine(self, path, initial_page):
+        # Get the 'page_progress' from our prefs, the user may have already read part of this magazine.
+        self.magazine_key = os.path.basename(path)
+        magazine_dict = self.progress_dict.get(self.magazine_key) or {}
+        self.page_progress = magazine_dict.get("page_progress")
+        if self.page_progress is None:
+            self.page_progress = 1
+
+        # If no 'initial_page' was specified, defer to the 'page_progress' page.
+        # A 'page_progress' of 0 (zero) is a special case indicating the magazine was completed, start at beginning again.
+        if (self.page_progress) and (not initial_page):
+            if self.page_progress != 0:
+                initial_page = self.page_progress
+            else:
+                initial_page = 1
         self.magazine = Magazine(path, initial_page)
         if self.magazine:
             self.prefs.set("last_magazine_path", path)
-            self.display_name = os.path.basename(path)
-            self.display_name = self.display_name[:-4]  # Removes the last 4 characters ('.pdf')
+            self.display_name = self.magazine_key[:-4]  # Removes the last 4 characters ('.pdf')
             current_page = self.magazine.current_page
             self.dirty = True
             self.hud.show(self.display_name, current_page, self.magazine.page_count)
