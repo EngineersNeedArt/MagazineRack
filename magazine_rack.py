@@ -220,27 +220,28 @@ class MagazineRack:
 
 
     def load_magazine(self, path, initial_page):
-        # Get the 'page_progress' from our prefs, the user may have already read part of this magazine.
-        self.magazine_key = os.path.basename(path)
-        magazine_dict = self.progress_dict.get(self.magazine_key) or {}
-        self.page_progress = magazine_dict.get("page_progress")
-        if self.page_progress is None:
-            self.page_progress = 1
+        if path:
+            # Get the 'page_progress' from our prefs, the user may have already read part of this magazine.
+            self.magazine_key = os.path.basename(path)
+            magazine_dict = self.progress_dict.get(self.magazine_key) or {}
+            self.page_progress = magazine_dict.get("page_progress")
+            if self.page_progress is None:
+                self.page_progress = 1
 
-        # If no 'initial_page' was specified, defer to the 'page_progress' page.
-        # A 'page_progress' of 0 (zero) is a special case indicating the magazine was completed, start at beginning again.
-        if (self.page_progress) and (not initial_page):
-            if self.page_progress != 0:
-                initial_page = self.page_progress
-            else:
-                initial_page = 1
-        self.magazine = Magazine(path, initial_page)
-        if self.magazine:
-            self.prefs.set("last_magazine_path", path)
-            self.display_name = self.magazine_key[:-4]  # Removes the last 4 characters ('.pdf')
-            current_page = self.magazine.current_page
-            self.dirty = True
-            self.hud.show(self.display_name, current_page, self.magazine.page_count)
+            # If no 'initial_page' was specified, defer to the 'page_progress' page.
+            # A 'page_progress' of 0 (zero) is a special case indicating the magazine was completed, start at beginning again.
+            if (self.page_progress) and (not initial_page):
+                if self.page_progress != 0:
+                    initial_page = self.page_progress
+                else:
+                    initial_page = 1
+            self.magazine = Magazine(path, initial_page)
+            if self.magazine:
+                self.prefs.set("last_magazine_path", path)
+                self.display_name = self.magazine_key[:-4]  # Removes the last 4 characters ('.pdf')
+                current_page = self.magazine.current_page
+                self.dirty = True
+                self.hud.show(self.display_name, current_page, self.magazine.page_count)
 
 
     def run(self):
