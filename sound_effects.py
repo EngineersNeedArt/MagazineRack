@@ -4,14 +4,14 @@ import pygame
 class SoundEffects:
     def __init__(self):
         pygame.mixer.init()     # Initialize Pygame mixer, load sounds.
-        self.in_sound = pygame.mixer.Sound('in_sound.wav')
-        self.out_sound = pygame.mixer.Sound('out_sound.wav')
-        self.toc_in_sound = pygame.mixer.Sound('toc_in_sound.wav')
-        self.toc_out_sound = pygame.mixer.Sound('toc_out_sound.wav')
-        self.open_sound = pygame.mixer.Sound('open_sound.wav')
-        self.left_sound = pygame.mixer.Sound('page-turn.wav')
-        self.right_sound = pygame.mixer.Sound('page-turn.wav')
-        self.fail_sound = pygame.mixer.Sound('fail_sound.wav')
+        self.in_sound = pygame.mixer.Sound('sounds/in_sound.wav')
+        self.out_sound = pygame.mixer.Sound('sounds/out_sound.wav')
+        self.toc_in_sound = pygame.mixer.Sound('sounds/toc_in_sound.wav')
+        self.toc_out_sound = pygame.mixer.Sound('sounds/toc_out_sound.wav')
+        self.open_sound = pygame.mixer.Sound('sounds/open_sound.wav')
+        self.left_sound = pygame.mixer.Sound('sounds/page-turn.wav')
+        self.right_sound = pygame.mixer.Sound('sounds/page-turn.wav')
+        self.fail_sound = pygame.mixer.Sound('sounds/fail_sound.wav')
 
 
     def play_open_toc(self):

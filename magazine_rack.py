@@ -23,13 +23,15 @@ class MagazineRack:
         else:
             self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         pygame.display.set_caption("Magazine Rack")
+        self.prefs = Prefs("config.json")
+        self.progress_dict = self.prefs.get("magazine_progress_dict") or {}
         self.sound_effects = SoundEffects()
         self.screen_width, self.screen_height = self.screen.get_size()
         self.max_width = self.screen_width // 2
         self.max_height = self.screen_height
         self.hud = HUD()
         self.toc_data = TOCData(base_path)
-        self.toc = TOC(self.screen_width, self.screen_height)
+        self.toc = TOC(self.screen_width, self.screen_height, self.progress_dict)
         self.base_path = base_path
         self.is_running = True
         self.magazine_key = ""
@@ -37,8 +39,6 @@ class MagazineRack:
         self.display_name = ""
         self.dirty = False
         self.magazine = None
-        self.prefs = Prefs("config.json")
-        self.progress_dict = self.prefs.get("magazine_progress_dict") or {}
         self.load_magazine (self.prefs.get("last_magazine_path"), self.prefs.get("last_page_index"))
 
 
@@ -47,11 +47,14 @@ class MagazineRack:
         self.prefs.set("last_page_index", current_page)
         if (self.page_progress > 0) and (current_page > self.page_progress):
             self.page_progress = current_page
+            percent = (self.page_progress * 100) // self.magazine.page_count
             # Special case when the magazine is complete, store 0 (zero).
             if self.magazine.is_last_page():
                 self.page_progress = 0
+                percent = 100
             magazine_dict = self.progress_dict.get(self.magazine_key) or {}
             magazine_dict["page_progress"] = self.page_progress
+            magazine_dict["percent_progress"] = percent
             self.progress_dict[self.magazine_key] = magazine_dict
             self.prefs.set("magazine_progress_dict", self.progress_dict)
 

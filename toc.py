@@ -20,7 +20,8 @@ class TOC:
     INACTIVE_COLOR = (160, 160, 160)
     BLACK_TRANSPARENT = (0, 0, 0, 192)  # Black with 50% alpha
 
-    def __init__(self, screen_wide, screen_tall):
+    def __init__(self, screen_wide, screen_tall, progress_data):
+        self.progress_dictionary = progress_data
         self.visible = False
         self.alpha = 0
         self.dirty = False
@@ -42,19 +43,37 @@ class TOC:
         self.CELL_HEIGHT = (column_tall - (self.STROKE * 2)) // 26
 
         self.FONT_SIZE = (self.CELL_HEIGHT * 22) // 28
-        self.narrow_font = pygame.font.Font("AsapCondensed-Medium.ttf", self.FONT_SIZE)
+        self.narrow_font = pygame.font.Font("fonts/AsapCondensed-Medium.ttf", self.FONT_SIZE)
 
         self.ICON_WIDTH = self.CELL_HEIGHT
         self.ICON_PADDING = 4
-        icon_image = pygame.image.load('magazine_icon.png')
+        icon_image = pygame.image.load('graphics/magazine_icon.png')
         self.magazine_icon = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
         self.magazine_icon = self.magazine_icon.convert_alpha()
-        chevron_image = pygame.image.load('chevron.png')
+        icon_image = pygame.image.load('graphics/magazine_icon_17.png')
+        self.magazine_icon_17 = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
+        self.magazine_icon_17 = self.magazine_icon_17.convert_alpha()
+        icon_image = pygame.image.load('graphics/magazine_icon_33.png')
+        self.magazine_icon_33 = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
+        self.magazine_icon_33 = self.magazine_icon_33.convert_alpha()
+        icon_image = pygame.image.load('graphics/magazine_icon_50.png')
+        self.magazine_icon_50 = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
+        self.magazine_icon_50 = self.magazine_icon_50.convert_alpha()
+        icon_image = pygame.image.load('graphics/magazine_icon_67.png')
+        self.magazine_icon_67 = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
+        self.magazine_icon_67 = self.magazine_icon_67.convert_alpha()
+        icon_image = pygame.image.load('graphics/magazine_icon_83.png')
+        self.magazine_icon_83 = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
+        self.magazine_icon_83 = self.magazine_icon_83.convert_alpha()
+        icon_image = pygame.image.load('graphics/magazine_icon_100.png')
+        self.magazine_icon_100 = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
+        self.magazine_icon_100 = self.magazine_icon_100.convert_alpha()
+        chevron_image = pygame.image.load('graphics/chevron.png')
         self.chevron = pygame.transform.smoothscale(chevron_image, (self.ICON_WIDTH, self.ICON_WIDTH))
         self.chevron = self.chevron.convert_alpha()
 
 
-    def _draw_row(self, item, text_x, text_y, selected, active, bounds, surface, is_file):
+    def _draw_row(self, item, text_x, text_y, selected, active, bounds, surface, is_file, progress):
         if selected:
             # Make a copy of the original rect
             item_bounds = bounds.copy()
@@ -66,7 +85,20 @@ class TOC:
                 pygame.draw.rect(surface, self.INACTIVE_COLOR, item_bounds)
 
         if is_file:
-            surface.blit(self.magazine_icon, (text_x + self.TEXT_X_OFFSET, text_y + self.TEXT_Y_OFFSET))
+            icon = self.magazine_icon
+            if progress > 0:
+                icon = self.magazine_icon_17
+            if progress > 25:
+                icon = self.magazine_icon_33
+            if progress > 42:
+                icon = self.magazine_icon_50
+            if progress > 58:
+                icon = self.magazine_icon_67
+            if progress > 75:
+                icon = self.magazine_icon_83
+            if progress == 100:
+                icon = self.magazine_icon_100
+            surface.blit(icon, (text_x + self.TEXT_X_OFFSET, text_y + self.TEXT_Y_OFFSET))
             text_x += self.ICON_WIDTH + self.ICON_PADDING
         elif selected:
             surface.blit(self.chevron, (bounds.right - self.ICON_WIDTH, text_y + self.TEXT_Y_OFFSET))
@@ -97,12 +129,16 @@ class TOC:
                 for one_prefix in prefixes:
                     if (item_name.startswith(one_prefix)):
                         item_name = item_name[len(one_prefix):]
-            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, False)
+            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, False, 0)
             if row == selected_row:
                 prefixes.append(item)
             text_y = text_y + self.CELL_HEIGHT
             row = row + 1
         for item in files:
+            progress = 0
+            magazine_dict = self.progress_dictionary.get(item)
+            if magazine_dict:
+                progress = magazine_dict.get("percent_progress")
             item_name = item[:-4]  # Removes the last 4 characters ('.pdf')
             # Remove "prefix": any portion of text that matches an element in the path.
             for one_prefix in prefixes:
@@ -110,7 +146,7 @@ class TOC:
                     item_name = item_name[len(one_prefix):]
             if (item_name.startswith(' - ')):
                 item_name = item_name[3:]
-            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, True)
+            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, True, progress)
             text_y = text_y + self.CELL_HEIGHT
             row = row + 1
 
