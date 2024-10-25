@@ -1,7 +1,7 @@
 # MagazineRack
 A Python app to browse a collection of PDFs (scanned magazines in my case).
 
-You point the **Magazine Rack** at a directory that contains your magazine (PDF) content (in the file: `magazine_rack.py`, the line: `app = MagazineRack('content')` — replace `'content'` with the relative path to the base directory of your magazines). **Magazine Rack** provides an onscreen directory navigation UI (with limitations on depth and breadth — see below). Directories are navigable entirely with the key presses. Files are indicated with a magazine icon and decoration to indicate approximate percentage of the magazine that has been viewed.
+You point the **Magazine Rack** at a directory that contains your magazine (PDF) content (in the file: `magazine_rack.py`, the line: `app = MagazineRack('content')` — replace `'content'` with the relative path to the base directory of your magazines). **Magazine Rack** provides an onscreen directory navigation UI (with limitations on depth and breadth — see below). Directories are navigable entirely with key presses. Files are indicated with a magazine icon and decoration to indicate approximate percentage of the magazine that has been viewed.
 
 <p align="center">
 <img width="1000" src="https://github.com/EngineersNeedArt/MagazineRack/blob/f49e7ee2b63ab3dd5173abad2f45c7f59e63abc4/screenshots/BrowserUI.jpg">
