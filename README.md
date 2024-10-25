@@ -1,6 +1,26 @@
 # MagazineRack
 A Python app to browse a collection of PDFs (scanned magazines in my case).
 
+You point the **Magazine Rack** at a directory that contains your magazine (PDF) content. **Magazine Rack** provides an onscreen directory navigation UI (with limitations on depth and breadth — see below). Directories are navigable entirely with the key presses. Files are indicated with a magazine icon and decoration to indicate approximate percentage of the magazine that has been viewed.
+
+<p align="center">
+<img width="1000" src="https://github.com/EngineersNeedArt/MagazineRack/blob/f49e7ee2b63ab3dd5173abad2f45c7f59e63abc4/screenshots/BrowserUI.jpg">
+  <br>
+<em>The navigation UI.</em>
+</p>
+
+When a magazine (PDF) is selected, hitting the ENTER key dismisses the navigation UI and displays the pages of the magazine "two-up". Key presses allow navigation through the magazone from start to end. Progress through each magazine is stored for display in the navigation UI as mentioned previously.
+
+<p align="center">
+<img width="1000" src="https://github.com/EngineersNeedArt/MagazineRack/blob/f49e7ee2b63ab3dd5173abad2f45c7f59e63abc4/screenshots/TwoUp.jpg">
+  <br>
+<em>Reading a magazine (two-up).</em>
+</p>
+
+I have found various archives of vintage magazines scanned to PDF but prefer to download them for offline reading. Travelling in an RV for example, you can't always expect internet accessibility. Additionally though I wanted a dedicated reader app that was otherwise distraction-free. And one that also recorded which magazines were read/completed.
+
+I enjoy, for example, perusing old hobbyist electronics magazines looking at the various projects. As there were quite a number of these magazines, knowing which ones I had already scanned was important.
+
 ### State
 
 Version 1.0 is just complete. This version is useable for paging through PDF's. A directory of your PDF collection can be displayed and navigated in order to load a new PDF. There are limitations however (see below).
