@@ -48,7 +48,9 @@ class Magazine:
             return self._rendered_pages[page_num]
         else:
             page = self._pdf_document.load_page(page_num)
-            pix = page.get_pixmap()
+            zoom = 2.0  # Increase this value to get better quality (2.0 = 200% zoom, 3.0 = 300%, etc.)
+            matrix = fitz.Matrix(zoom, zoom)  # Create a transformation matrix for scaling
+            pix = page.get_pixmap(matrix=matrix)
             img_data = io.BytesIO(pix.tobytes("png"))
             img = Image.open(img_data)
             img = self._resize_image(img, max_width, max_height)
@@ -61,6 +63,7 @@ class Magazine:
             self._current_page -= 2  # Move backward by 2 pages
             if self._current_page < 1:
                 self._current_page = 1
+            self._rendered_pages.clear()
             return True
         else:
             return False
@@ -77,6 +80,7 @@ class Magazine:
                         self._current_page = self._page_count
                     else:
                         self._current_page = self._page_count - 1
+            self._rendered_pages.clear()
             return True
         else:
             return False

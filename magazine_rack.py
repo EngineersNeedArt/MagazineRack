@@ -29,6 +29,8 @@ class MagazineRack:
         self.screen_width, self.screen_height = self.screen.get_size()
         self.max_width = self.screen_width // 2
         self.max_height = self.screen_height
+#        self.max_width = self.screen_width
+#        self.max_height = self.screen_height * 2
         self.hud = HUD()
         self.toc_data = TOCData(base_path)
         self.toc = TOC(self.screen_width, self.screen_height, self.progress_dict)
