@@ -3,7 +3,7 @@ A Python app to browse a collection of PDFs (scanned magazines in my case).
 
 ### State
 
-Alpha 1 is just complete. This version is useable for paging through PDF's. A directory of your PDF collection can be displayed and navigated in order to load a new PDF. There are limitations however (see below).
+Version 1.0 is just complete. This version is useable for paging through PDF's. A directory of your PDF collection can be displayed and navigated in order to load a new PDF. There are limitations however (see below).
 
 ### Directory Structure
 
