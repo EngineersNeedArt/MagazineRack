@@ -21,6 +21,8 @@ I have found various archives of vintage magazines scanned to PDF but prefer to 
 
 I enjoy, for example, perusing old hobbyist electronics magazines looking at the various projects. As there were quite a number of these magazines, knowing which ones I had already scanned was important.
 
+Although intended for (and tested on) a Raspberry Pi, most of the development has been on MacOS where it also works well.
+
 ### State
 
 Version 1.0 is just complete. This version is useable for paging through PDF's. A directory of your PDF collection can be displayed and navigated in order to load a new PDF. There are limitations however (see below).
