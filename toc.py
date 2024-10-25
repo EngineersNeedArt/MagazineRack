@@ -153,7 +153,7 @@ class TOC:
 
     def _prepare_surface(self, toc_data_source):
         prefixes = []
-        active_column = toc_data_source.get_active_column()
+        active_column = toc_data_source.active_column
 
         # Draw the rounded rectangle
         pygame.draw.rect(self.surface, self.WHITE, (0, 0, self.width, self.toc_tall), border_radius=self.RADIUS)

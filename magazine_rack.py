@@ -10,14 +10,14 @@ from toc_data import TOCData
 
 
 # DEBUG flag
-DEBUG = False  # Is not FULLSCREEN in Debug mode.
+DEBUG = True  # Is not FULLSCREEN in Debug mode.
 
 
 class MagazineRack:
 
     def __init__(self, base_path):
         pygame.init()
-        pygame.key.set_repeat(1000, 200)
+#        pygame.key.set_repeat(1000, 200)
         if DEBUG:
             self.screen = pygame.display.set_mode((1024, 768))
         else:
@@ -32,7 +32,7 @@ class MagazineRack:
 #        self.max_width = self.screen_width
 #        self.max_height = self.screen_height * 2
         self.hud = HUD()
-        self.toc_data = TOCData(base_path)
+        self.toc_data = TOCData(base_path, self.prefs.get("last_magazine_path"))
         self.toc = TOC(self.screen_width, self.screen_height, self.progress_dict)
         self.base_path = base_path
         self.is_running = True
@@ -117,7 +117,7 @@ class MagazineRack:
 
     def _handle_enter_key(self):
         if self.toc.is_visible():
-            path = self.toc_data.selected_path()
+            path = self.toc_data.selected_path
             if (path is None) or (TOCData.is_directory(path)):
                 self.sound_effects.play_fail()
             else:
