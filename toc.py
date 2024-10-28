@@ -22,7 +22,7 @@ class TOC:
 
     def __init__(self, screen_wide, screen_tall, progress_data):
         self.progress_dictionary = progress_data
-        self.visible = False
+        self._visible = False
         self.alpha = 0
         self.dirty = False
         self.start_time = 0
@@ -178,8 +178,14 @@ class TOC:
         self._draw_column(directories, files, selected_row, active_column == 4, prefixes, 4, self.surface)
 
 
+    @property
+    def visible(self)->bool:
+        return self._visible
+
+
     def handle(self)->bool:
-        if (not self.visible) and (self.alpha > 0):
+        self.dirty = False
+        if (not self._visible) and (self.alpha > 0):
             elapsed_time = time.time() - self.start_time  # Handle fade-out timing
             if elapsed_time < self.FADE_TIME:
                 self.alpha = int(255 * (self.FADE_TIME - elapsed_time))
@@ -194,30 +200,26 @@ class TOC:
         screen.blit(self.surface, (self.x_loc, self.y_loc))
 
 
-    def is_visible(self)->bool:
-        return self.visible
-
-
     def hide(self):
-        self.visible = False
+        self._visible = False
         self.start_time = time.time()  # Reset HUD visibility
         self.dirty = True
 
 
     def show(self, data_source):
         self._prepare_surface(data_source)
-        self.visible = True
+        self._visible = True
         self.alpha = 255
         self.dirty = True
 
 
     def toggle(self, data_source)->bool:
-        self.visible = not self.visible
-        if self.visible:
+        self._visible = not self._visible
+        if self._visible:
             self.show(data_source)
         else:
             self.hide()
-        return self.visible
+        return self._visible
 
 
     def update(self, toc_data_source):

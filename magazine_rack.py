@@ -10,14 +10,13 @@ from toc_data import TOCData
 
 
 # DEBUG flag
-DEBUG = False  # Is not FULLSCREEN in Debug mode.
+DEBUG = True  # Is not FULLSCREEN in Debug mode.
 
 
 class MagazineRack:
 
     def __init__(self, base_path):
         pygame.init()
-#        pygame.key.set_repeat(1000, 200)
         if DEBUG:
             self.screen = pygame.display.set_mode((1024, 768))
         else:
@@ -29,8 +28,6 @@ class MagazineRack:
         self.screen_width, self.screen_height = self.screen.get_size()
         self.max_width = self.screen_width // 2
         self.max_height = self.screen_height
-#        self.max_width = self.screen_width
-#        self.max_height = self.screen_height * 2
         self.hud = HUD()
         self.toc_data = TOCData(base_path, self.prefs.get("last_magazine_path"))
         self.toc = TOC(self.screen_width, self.screen_height, self.progress_dict)
@@ -63,7 +60,7 @@ class MagazineRack:
 
     def _handle_left_key(self):
         self.dirty = False
-        if self.toc.is_visible():
+        if self.toc.visible:
             self.sound_effects.play_nav_left()
             self.dirty = self.toc_data.go_left()
             if self.dirty:
@@ -82,7 +79,7 @@ class MagazineRack:
 
     def _handle_right_key(self):
         self.dirty = False
-        if self.toc.is_visible():
+        if self.toc.visible:
             self.sound_effects.play_nav_right()
             self.dirty = self.toc_data.go_right()
             if self.dirty:
@@ -100,7 +97,7 @@ class MagazineRack:
 
 
     def _handle_up_key(self):
-        if self.toc.is_visible():
+        if self.toc.visible:
             self.sound_effects.play_nav_up()
             self.dirty = self.toc_data.go_up()
             if self.dirty:
@@ -108,7 +105,7 @@ class MagazineRack:
 
 
     def _handle_down_key(self):
-        if self.toc.is_visible():
+        if self.toc.visible:
             self.sound_effects.play_nav_down()
             self.dirty = self.toc_data.go_down()
             if self.dirty:
@@ -116,7 +113,7 @@ class MagazineRack:
 
 
     def _handle_enter_key(self):
-        if self.toc.is_visible():
+        if self.toc.visible:
             path = self.toc_data.selected_path
             if (path is None) or (TOCData.is_directory(path)):
                 self.sound_effects.play_fail()
@@ -158,8 +155,10 @@ class MagazineRack:
 
 
     # Center the image
-    def _display_page_centered(self, page_index):
+    def _display_page_centered(self, page_index)->bool:
         img = self.magazine.image_for_page(page_index, self.max_width, self.max_height)
+        if not img:
+            return False
         img_width, img_height = img.size
         mode = img.mode
         data = img.tobytes()
@@ -168,6 +167,7 @@ class MagazineRack:
         y_pos = (self.screen_height - img_height) // 2
         self.screen.fill((0, 0, 0))
         self.screen.blit(pygame_image, (x_pos, y_pos))
+        return True
 
 
     # Display two-up.
@@ -176,6 +176,8 @@ class MagazineRack:
 
         if left_index:
             left_img = self.magazine.image_for_page(left_index, self.max_width, self.max_height)
+            if not left_img:
+                return False
             mode_left = left_img.mode
             size_left = left_img.size
             data_left = left_img.tobytes()
@@ -186,6 +188,8 @@ class MagazineRack:
 
         if right_index:
             right_img = self.magazine.image_for_page(right_index, self.max_width, self.max_height)
+            if not right_img:
+                return False
             mode_right = right_img.mode
             size_right = right_img.size
             data_right = right_img.tobytes()
@@ -193,13 +197,13 @@ class MagazineRack:
             right_x = (self.screen_width // 2) + 1
             center_y = (self.screen_height - size_right[1]) // 2
             self.screen.blit(pygame_right_image, (right_x, center_y))
+        return True
 
-
-    def _render_magazine_spread(self):
+    def _render_magazine_spread(self)->bool:
         if self.magazine:
             current_page = self.magazine.current_page
             if current_page == 1:
-                self._display_page_centered(0)
+                return self._display_page_centered(0)
             elif current_page > 1:
                 left_page_number = current_page if current_page % 2 == 0 else current_page - 1
                 right_page_number = left_page_number + 1
@@ -207,18 +211,17 @@ class MagazineRack:
                     right_page_number = None
                 left_page = left_page_number - 1
                 right_page = right_page_number - 1 if right_page_number else None
-                self._display_pages_two_up(left_page, right_page)
+                return self._display_pages_two_up(left_page, right_page)
 
 
     def _update_screen(self):
         if self.toc_dirty or self.hud_dirty or self.dirty:  # Only render when needed
-            self._render_magazine_spread()
-            if self.hud.is_visible():
+            self.dirty = self._render_magazine_spread() == False
+            if self.hud._visible:
                 self.hud.render(self.screen)
-            if self.toc.is_visible():
+            if self.toc.visible:
                 self.toc.render(self.screen)
             pygame.display.flip()
-            self.dirty = False
 
 
     def load_magazine(self, path, initial_page):
@@ -254,6 +257,7 @@ class MagazineRack:
             self.toc_dirty = self.toc.handle()
             self.hud_dirty = self.hud.handle()
             self._update_screen()
+            pygame.time.delay(100)
 
 
 if __name__ == "__main__":
