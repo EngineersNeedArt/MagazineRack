@@ -24,6 +24,7 @@ class MagazineRack:
         pygame.display.set_caption("Magazine Rack")
         self.prefs = Prefs("config.json")
         self.progress_dict = self.prefs.get("magazine_progress_dict") or {}
+        self.bookmarks_dict = self.prefs.get("magazine_bookmarks_dict") or {}
         self.sound_effects = SoundEffects()
         self.screen_width, self.screen_height = self.screen.get_size()
         self.max_width = self.screen_width // 2
@@ -39,6 +40,10 @@ class MagazineRack:
         self.dirty = False
         self.magazine = None
         self.load_magazine (self.prefs.get("last_magazine_path"), self.prefs.get("last_page_index"))
+        self.bookmark_left_image = pygame.transform.smoothscale(pygame.image.load('graphics/bookmark_left.png'), (38, 64))
+        self.bookmark_left_image = self.bookmark_left_image.convert_alpha()
+        self.bookmark_right_image = pygame.transform.smoothscale(pygame.image.load('graphics/bookmark_right.png'), (38, 64))
+        self.bookmark_right_image = self.bookmark_right_image.convert_alpha()
 
 
     def _store_page_progress(self):
@@ -56,6 +61,20 @@ class MagazineRack:
             magazine_dict["percent_progress"] = percent
             self.progress_dict[self.magazine_key] = magazine_dict
             self.prefs.set("magazine_progress_dict", self.progress_dict)
+
+
+    def _get_page_and_facing_page_indices(self):
+        page_index = 0
+        facing_index = None
+        current_page = self.magazine.current_page
+        if current_page > 1:
+            left_page_number = current_page if current_page % 2 == 0 else current_page - 1
+            right_page_number = left_page_number + 1
+            if right_page_number > self.magazine.page_count:
+                right_page_number = None
+            page_index = left_page_number - 1
+            facing_index = right_page_number - 1 if right_page_number else None
+        return page_index, facing_index
 
 
     def _handle_left_key(self):
@@ -121,6 +140,9 @@ class MagazineRack:
                 self.sound_effects.play_open_magazine()
                 self.toc.hide()
                 self.load_magazine(path, None)
+        else:
+            self._cycle_bookmark()
+            self.dirty = True
 
 
     def _handle_toc_toggle_key(self):
@@ -154,6 +176,52 @@ class MagazineRack:
                 self.is_running = False
 
 
+    def _is_page_bookmarked(self, page_index)->bool:
+        return str(page_index) in self.magazine_bookmarks
+
+    
+    def _set_bookmark(self, page_index: int) -> None:
+        self.magazine_bookmarks[str(page_index)] = True
+
+
+    def _clear_bookmark(self, page_index: int) -> None:
+        self.magazine_bookmarks.pop(str(page_index), None)
+
+
+    def _cycle_bookmark(self):
+        (page_index, facing_index) = self._get_page_and_facing_page_indices()
+        if facing_index is None:
+            bookmarked = self._is_page_bookmarked(page_index)
+            if bookmarked:
+                self._clear_bookmark(page_index)
+            else:
+                self._set_bookmark(page_index)
+        else:
+            page_bookmarked = self._is_page_bookmarked(page_index)
+            facing_bookmarked = self._is_page_bookmarked(facing_index)
+            if page_bookmarked:
+                if not facing_bookmarked:
+                    self._clear_bookmark(page_index)
+                    self._set_bookmark(facing_index)
+                else:
+                    self._clear_bookmark(page_index)
+                    self._clear_bookmark(facing_index)
+            else:
+                if not facing_bookmarked:
+                    self._set_bookmark(page_index)
+                else:
+                    self._set_bookmark(page_index)
+        self.bookmarks_dict[self.magazine_key] = self.magazine_bookmarks
+        self.prefs.set("magazine_bookmarks_dict", self.bookmarks_dict)
+
+
+    def _displayBookmark(self, surface, onLeft):
+        if onLeft:
+            surface.blit(self.bookmark_left_image, (0, 0))
+        else:
+            surface.blit(self.bookmark_right_image, (surface.get_width() - self.bookmark_right_image.get_width(), 0))
+
+
     # Center the image
     def _display_page_centered(self, page_index)->bool:
         img = self.magazine.image_for_page(page_index, self.max_width, self.max_height)
@@ -163,6 +231,8 @@ class MagazineRack:
         mode = img.mode
         data = img.tobytes()
         pygame_image = pygame.image.fromstring(data, (img_width, img_height), mode)
+        if self._is_page_bookmarked(page_index):
+            self._displayBookmark(pygame_image, True)
         x_pos = (self.screen_width - img_width) // 2
         y_pos = (self.screen_height - img_height) // 2
         self.screen.fill((0, 0, 0))
@@ -184,6 +254,8 @@ class MagazineRack:
             pygame_left_image = pygame.image.fromstring(data_left, size_left, mode_left)
             left_x = (self.screen_width // 2 - size_left[0]) - 1
             center_y = (self.screen_height - size_left[1]) // 2
+            if self._is_page_bookmarked(left_index):
+                self._displayBookmark(pygame_left_image, True)
             self.screen.blit(pygame_left_image, (left_x, center_y))
 
         if right_index:
@@ -196,22 +268,19 @@ class MagazineRack:
             pygame_right_image = pygame.image.fromstring(data_right, size_right, mode_right)
             right_x = (self.screen_width // 2) + 1
             center_y = (self.screen_height - size_right[1]) // 2
+            if self._is_page_bookmarked(right_index):
+                self._displayBookmark(pygame_right_image, False)
             self.screen.blit(pygame_right_image, (right_x, center_y))
         return True
 
+
     def _render_magazine_spread(self)->bool:
         if self.magazine:
-            current_page = self.magazine.current_page
-            if current_page == 1:
-                return self._display_page_centered(0)
-            elif current_page > 1:
-                left_page_number = current_page if current_page % 2 == 0 else current_page - 1
-                right_page_number = left_page_number + 1
-                if right_page_number > self.magazine.page_count:
-                    right_page_number = None
-                left_page = left_page_number - 1
-                right_page = right_page_number - 1 if right_page_number else None
-                return self._display_pages_two_up(left_page, right_page)
+            (page_index, facing_index) = self._get_page_and_facing_page_indices()
+            if facing_index is None:
+                return self._display_page_centered(page_index)
+            else:
+                return self._display_pages_two_up(page_index, facing_index)
 
 
     def _update_screen(self):
@@ -232,6 +301,8 @@ class MagazineRack:
             self.page_progress = magazine_dict.get("page_progress")
             if self.page_progress is None:
                 self.page_progress = 1
+
+            self.magazine_bookmarks = self.bookmarks_dict.get(self.magazine_key) or {}
 
             # If no 'initial_page' was specified, defer to the 'page_progress' page.
             # A 'page_progress' of 0 (zero) is a special case indicating the magazine was completed, start at beginning again.
