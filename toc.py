@@ -184,7 +184,6 @@ class TOC:
 
 
     def handle(self)->bool:
-        self.dirty = False
         if (not self._visible) and (self.alpha > 0):
             elapsed_time = time.time() - self.start_time  # Handle fade-out timing
             if elapsed_time < self.FADE_TIME:
@@ -198,6 +197,7 @@ class TOC:
     def render(self, screen):
         self.surface.set_alpha(self.alpha)
         screen.blit(self.surface, (self.x_loc, self.y_loc))
+        self.dirty = False
 
 
     def hide(self):

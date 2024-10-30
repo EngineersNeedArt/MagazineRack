@@ -55,7 +55,6 @@ class HUD:
 
 
     def handle(self):
-        self.dirty = False
         if self.alpha > 0:   # Handle fade-out timing.
             elapsed_time = time.time() - self.start_time
             if elapsed_time > self.DISPLAY_TIME:
@@ -71,12 +70,12 @@ class HUD:
 
 
     def render(self, screen):
-        if self._visible:
-            screen_width, screen_height = screen.get_size()
-            x = (screen_width - self.hud_width) // 2
-            y = screen_height - self.height - self.Y_OFFSET  # Centered near bottom
-            self.surface.set_alpha(self.alpha)
-            screen.blit(self.surface, (x, y))
+        screen_width, screen_height = screen.get_size()
+        x = (screen_width - self.hud_width) // 2
+        y = screen_height - self.height - self.Y_OFFSET  # Centered near bottom
+        self.surface.set_alpha(self.alpha)
+        screen.blit(self.surface, (x, y))
+        self.dirty = False
 
 
     def show(self, display_name, display_page, display_page_count):

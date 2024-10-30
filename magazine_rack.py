@@ -10,7 +10,7 @@ from toc_data import TOCData
 
 
 # DEBUG flag
-DEBUG = True  # Is not FULLSCREEN in Debug mode.
+DEBUG = False  # Is not FULLSCREEN in Debug mode.
 
 
 class MagazineRack:
@@ -179,7 +179,7 @@ class MagazineRack:
     def _is_page_bookmarked(self, page_index)->bool:
         return str(page_index) in self.magazine_bookmarks
 
-    
+
     def _set_bookmark(self, page_index: int) -> None:
         self.magazine_bookmarks[str(page_index)] = True
 
