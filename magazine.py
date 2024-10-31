@@ -108,16 +108,16 @@ class Magazine:
 
 
     def go_prev_page(self)->bool:
+        was_page = self._current_page
         if self._current_page > 1:
             self._current_page -= 2  # Move backward by 2 pages
             if self._current_page < 1:
                 self._current_page = 1
-            return True
-        else:
-            return False
+        return self._current_page != was_page
 
 
     def go_next_page(self)->bool:
+        was_page = self._current_page
         if self._current_page < self._page_count:
             if self._current_page == 1:
                 self._current_page += 1
@@ -128,7 +128,5 @@ class Magazine:
                         self._current_page = self._page_count
                     else:
                         self._current_page = self._page_count - 1
-            return True
-        else:
-            return False
+        return self._current_page != was_page
 
