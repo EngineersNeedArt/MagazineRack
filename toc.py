@@ -20,8 +20,9 @@ class TOC:
     INACTIVE_COLOR = (160, 160, 160)
     BLACK_TRANSPARENT = (0, 0, 0, 192)  # Black with 50% alpha
 
-    def __init__(self, screen_wide, screen_tall, progress_data):
+    def __init__(self, screen_wide, screen_tall, progress_data, bookmark_data):
         self.progress_dictionary = progress_data
+        self.bookmark_dictionary = bookmark_data
         self._visible = False
         self.alpha = 0
         self.dirty = False
@@ -68,12 +69,15 @@ class TOC:
         icon_image = pygame.image.load('graphics/magazine_icon_100.png')
         self.magazine_icon_100 = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
         self.magazine_icon_100 = self.magazine_icon_100.convert_alpha()
+        icon_image = pygame.image.load('graphics/bookmark_icon.png')
+        self.bookmark_icon = pygame.transform.smoothscale(icon_image, (self.ICON_WIDTH, self.ICON_WIDTH))
+        self.bookmark_icon = self.bookmark_icon.convert_alpha()
         chevron_image = pygame.image.load('graphics/chevron.png')
         self.chevron = pygame.transform.smoothscale(chevron_image, (self.ICON_WIDTH, self.ICON_WIDTH))
         self.chevron = self.chevron.convert_alpha()
 
 
-    def _draw_row(self, item, text_x, text_y, selected, active, bounds, surface, is_file, progress):
+    def _draw_row(self, item, text_x, text_y, selected, active, bounds, surface, is_file, progress, bookmark):
         if selected:
             # Make a copy of the original rect
             item_bounds = bounds.copy()
@@ -99,6 +103,8 @@ class TOC:
             if progress == 100:
                 icon = self.magazine_icon_100
             surface.blit(icon, (text_x + self.TEXT_X_OFFSET, text_y + self.TEXT_Y_OFFSET))
+            if bookmark:
+                surface.blit(self.bookmark_icon, (text_x + self.TEXT_X_OFFSET, text_y + self.TEXT_Y_OFFSET))
             text_x += self.ICON_WIDTH + self.ICON_PADDING
         elif selected:
             surface.blit(self.chevron, (bounds.right - self.ICON_WIDTH, text_y + self.TEXT_Y_OFFSET))
@@ -129,7 +135,7 @@ class TOC:
                 for one_prefix in prefixes:
                     if (item_name.startswith(one_prefix)):
                         item_name = item_name[len(one_prefix):]
-            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, False, 0)
+            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, False, 0, False)
             if row == selected_row:
                 prefixes.append(item)
             text_y = text_y + self.CELL_HEIGHT
@@ -139,6 +145,7 @@ class TOC:
             magazine_dict = self.progress_dictionary.get(item)
             if magazine_dict:
                 progress = magazine_dict.get("percent_progress")
+            has_bookmark = len(self.bookmark_dictionary.get(item) or {}) > 0
             item_name = item[:-4]  # Removes the last 4 characters ('.pdf')
             # Remove "prefix": any portion of text that matches an element in the path.
             for one_prefix in prefixes:
@@ -146,7 +153,7 @@ class TOC:
                     item_name = item_name[len(one_prefix):]
             if (item_name.startswith(' - ')):
                 item_name = item_name[3:]
-            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, True, progress)
+            self._draw_row(item_name, text_x, text_y, row == selected_row, active, bounds, surface, True, progress, has_bookmark)
             text_y = text_y + self.CELL_HEIGHT
             row = row + 1
 

@@ -31,7 +31,7 @@ class MagazineRack:
         self.max_height = self.screen_height
         self.hud = HUD()
         self.toc_data = TOCData(base_path, self.prefs.get("last_magazine_path"))
-        self.toc = TOC(self.screen_width, self.screen_height, self.progress_dict)
+        self.toc = TOC(self.screen_width, self.screen_height, self.progress_dict, self.bookmarks_dict)
         self.base_path = base_path
         self.is_running = True
         self.magazine_key = ""
