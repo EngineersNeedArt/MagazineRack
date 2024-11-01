@@ -21,28 +21,40 @@ class TOCData:
         self.column_4_selected_row = None
         self.selection_changed = False
         if initial_path:
-            path = Path(initial_path)
-            components = list(path.parts)
-            if components[0] == base_path:
-                row = self._row_matching(1, components[1])
+            self._selectInitialPath(base_path, initial_path)
+
+
+    def _selectInitialPath(self, base_path, initial_path):
+        path = Path(initial_path)
+        components = list(path.parts)
+        if components[0] == base_path:
+            if len(components) <= 1:
+                return
+            row = self._row_matching(1, components[1])
+            if row is not None:
+                self._active_column = 1
+                self.column_1_selected_row = row
+                self._get_directories_and_files_for_column(2)
+                if len(components) <= 2:
+                    return
+                row = self._row_matching(2, components[2])
                 if row is not None:
-                    self._active_column = 1
-                    self.column_1_selected_row = row
-                    self._get_directories_and_files_for_column(2)
-                    row = self._row_matching(2, components[2])
+                    self._active_column = 2
+                    self.column_2_selected_row = row
+                    self._get_directories_and_files_for_column(3)
+                    if len(components) <= 3:
+                        return
+                    row = self._row_matching(3, components[3])
                     if row is not None:
-                        self._active_column = 2
-                        self.column_2_selected_row = row
-                        self._get_directories_and_files_for_column(3)
-                        row = self._row_matching(3, components[3])
-                        if row is not None:
-                            self._active_column = 3
-                            self.column_3_selected_row = row
-                            self._get_directories_and_files_for_column(4)
-                        row = self._row_matching(4, components[4])
-                        if row is not None:
-                            self._active_column = 4
-                            self.column_4_selected_row = row
+                        self._active_column = 3
+                        self.column_3_selected_row = row
+                        self._get_directories_and_files_for_column(4)
+                    if len(components) <= 4:
+                        return
+                    row = self._row_matching(4, components[4])
+                    if row is not None:
+                        self._active_column = 4
+                        self.column_4_selected_row = row
 
 
     def _row_matching(self, column_index, component):
