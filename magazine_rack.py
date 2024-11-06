@@ -194,8 +194,10 @@ class MagazineRack:
             bookmarked = self._is_page_bookmarked(page_index)
             if bookmarked:
                 self._clear_bookmark(page_index)
+                self.sound_effects.play_bookmark_off()
             else:
                 self._set_bookmark(page_index)
+                self.sound_effects.play_bookmark_on()
         else:
             page_bookmarked = self._is_page_bookmarked(page_index)
             facing_bookmarked = self._is_page_bookmarked(facing_index)
@@ -203,14 +205,18 @@ class MagazineRack:
                 if not facing_bookmarked:
                     self._clear_bookmark(page_index)
                     self._set_bookmark(facing_index)
+                    self.sound_effects.play_bookmark_on()
                 else:
                     self._clear_bookmark(page_index)
                     self._clear_bookmark(facing_index)
+                    self.sound_effects.play_bookmark_off()
             else:
                 if not facing_bookmarked:
                     self._set_bookmark(page_index)
+                    self.sound_effects.play_bookmark_on()
                 else:
                     self._set_bookmark(page_index)
+                    self.sound_effects.play_bookmark_on()
         self.bookmarks_dict[self.magazine_key] = self.magazine_bookmarks
         self.prefs.set("magazine_bookmarks_dict", self.bookmarks_dict)
 

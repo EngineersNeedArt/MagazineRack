@@ -12,6 +12,8 @@ class SoundEffects:
         self.left_sound = pygame.mixer.Sound('sounds/page-turn.wav')
         self.right_sound = pygame.mixer.Sound('sounds/page-turn.wav')
         self.fail_sound = pygame.mixer.Sound('sounds/fail_sound.wav')
+        self.bookmark_on_sound = pygame.mixer.Sound('sounds/bookmark_on.wav')
+        self.bookmark_off_sound = pygame.mixer.Sound('sounds/bookmark_off.wav')
 
 
     def play_open_toc(self):
@@ -49,6 +51,11 @@ class SoundEffects:
     def play_right_page(self):
         self.right_sound.play()
 
+    def play_bookmark_on(self):
+        self.bookmark_on_sound.play()
+
+    def play_bookmark_off(self):
+        self.bookmark_off_sound.play()
 
 
 
