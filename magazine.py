@@ -10,8 +10,14 @@ THREADED_RENDERING = False
 
 class Magazine:
     def __init__(self, path, initial_page=1):
-        self._pdf_document = fitz.open(path)
-        self._page_count = self._pdf_document.page_count
+
+        self._pdf_document = None
+        self._page_count = 0
+        try:
+            self._pdf_document = fitz.open(path)
+            self._page_count = self._pdf_document.page_count
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
         if (not initial_page) or (initial_page > self._page_count):
             initial_page = 1
         self._current_page = initial_page
@@ -19,6 +25,10 @@ class Magazine:
         if THREADED_RENDERING:
             self._rendering_pages = {}
             self._cache_lock = threading.Lock()
+
+
+    def is_valid(self):
+        return self._pdf_document is not None
 
 
     def _calculate_image_size(self, image):
@@ -89,6 +99,8 @@ class Magazine:
 
 
     def image_for_page(self, page_num, max_width, max_height):
+        if not self.is_valid():
+            return None
         img = None
         if THREADED_RENDERING:
             with self._cache_lock:

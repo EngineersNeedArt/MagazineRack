@@ -318,7 +318,7 @@ class MagazineRack:
                 else:
                     initial_page = 1
             self.magazine = Magazine(path, initial_page)
-            if self.magazine:
+            if self.magazine.is_valid():
                 self.prefs.set("last_magazine_path", path)
                 self.display_name = self.magazine_key[:-4]  # Removes the last 4 characters ('.pdf')
                 current_page = self.magazine.current_page
@@ -327,7 +327,7 @@ class MagazineRack:
 
 
     def run(self):
-        if not self.magazine:
+        if not self.magazine.is_valid():
             self.toc.show(self.toc_data)
         while self.is_running:
             self._handle_events()
